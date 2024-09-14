@@ -1383,6 +1383,11 @@ const handleChartbot = async (
     return;
   }
 
+  if (messageBody == "999") {
+    await ticket.update({ status: "closed" });
+    return;
+  }
+
   // voltar para o menu anterior
   if (!isNil(queue) && !isNil(ticket.queueOptionId) && messageBody == "0") {
     const option = await QueueOption.findByPk(ticket.queueOptionId);
@@ -1637,6 +1642,7 @@ const handleChartbot = async (
         });
         options += `\n*[ 0 ]* - Menu anterior`;
         options += `\n*[ # ]* - Menu inicial`;
+        options += `\n*[ 999 ]* - Finalizar atendimento`;
         const textMessage = {
           text: formatBody(
             `\u200e${currentOption.message}\n\n${options}`,
@@ -1819,6 +1825,11 @@ const handleMessage = async (
         queueId: null
       });
       await verifyQueue(wbot, msg, ticket, ticket.contact);
+      return;
+    }
+
+    if (bodyMessage == "999") {
+      await ticket.update({ status: "closed" });
       return;
     }
 
