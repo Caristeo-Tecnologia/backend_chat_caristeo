@@ -9,6 +9,7 @@ import ShowTicketUUIDService from "../services/TicketServices/ShowTicketFromUUID
 import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import UpdateTicketService from "../services/TicketServices/UpdateTicketService";
 import ListTicketsServiceKanban from "../services/TicketServices/ListTicketsServiceKanban";
+import TicketAbstractService from "../services/TicketServices/TicketAbstractService";
 
 type IndexQuery = {
   searchParam: string;
@@ -221,3 +222,9 @@ export const remove = async (
 
   return res.status(200).json({ message: "ticket deleted" });
 };
+
+export const abstract = async (req: Request,res: Response) => {
+  const { ticketId } = req.params;
+  const data = await TicketAbstractService(ticketId);
+  return res.status(200).json(data);
+}

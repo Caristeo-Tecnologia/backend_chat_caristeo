@@ -36,6 +36,8 @@ import DoneIcon from '@material-ui/icons/Done';
 import ClearOutlinedIcon from '@material-ui/icons/ClearOutlined';
 import contrastColor from "../../helpers/contrastColor";
 import ContactTag from "../ContactTag";
+import TicketAbstractDialog from "../TicketAbstractDialog";
+import { DescriptionOutlined } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   ticket: {
@@ -360,6 +362,11 @@ const useStyles = makeStyles((theme) => ({
 
   return (
     <React.Fragment key={ticket.id}>
+    <TicketAbstractDialog
+        open={openTicketAbstractDialog}
+        handleClose={() => setOpenTicketAbstractDialog(false)}
+        ticketId={ticket.id}
+      ></TicketAbstractDialog>
       <TicketMessagesDialog
         open={openTicketMessageDialog}
 
@@ -430,6 +437,18 @@ const useStyles = makeStyles((theme) => ({
                     />
                   </Tooltip>
                 )}
+                <Tooltip title="Visualizar resumo">
+                  <DescriptionOutlined
+                    onClick={() => setOpenTicketAbstractDialog(true)}
+                    fontSize="small"
+                    style={{
+                      color: blue[700],
+                      cursor: "pointer",
+                      marginLeft: 10,
+                      verticalAlign: "middle"
+                    }}
+                  />
+                </Tooltip>
               </Typography>
               <ListItemSecondaryAction>
                 <Box className={classes.ticketInfo1}>{renderTicketInfo()}</Box>
