@@ -1516,6 +1516,7 @@ const handleChartbot = async (
       });
       //options += `\n*[ 0 ]* - Menu anterior`;
       options += `\n*[ # ]* - Menu inicial`;
+      options += `\n*[ 999 ]* - Finalizar atendimento`;;
 
       const textMessage = {
         text: formatBody(
