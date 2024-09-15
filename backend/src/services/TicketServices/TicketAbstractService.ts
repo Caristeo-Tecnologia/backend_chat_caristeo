@@ -1,18 +1,75 @@
-const TicketAbstractService = (_ticketId: string) => {
-  return [
-    {
-      question: 'Qual serviço deseja?',
-      answer: 'Orçamento'
-    },
-    {
-      question: 'O que deseja?',
-      answer: 'Modificar Orçamento'
-    },
-    {
-      question: 'Informe a Descrição',
-      answer: 'Descrição de Alteração'
+import { QueryTypes } from "sequelize";
+import sequelize from "../../database";
+
+const TicketAbstractService = async (ticketId: string) => {
+  const sql = `
+  ;with cte as (
+    select
+      m.*,
+      row_number() over(order by m."createdAt") as sequence
+    from
+      "Messages" m
+    inner join "Tickets" t on
+      t.id = m."ticketId"
+    where
+      t.id = ${ticketId}
+      and m."createdAt" >= t."pendingAt"
+  )
+  select
+    *
+  from
+    cte
+  where
+    cte."sequence" <= (
+      select
+        sequence + 1
+      from
+        cte
+      where
+        body like '%[ 999 ]%'
+      order by
+        "createdAt"
+      limit 1
+    )
+    and cte."sequence" >= (
+      select
+        sequence
+      from
+        cte
+      where
+        "fromMe" = true
+      order by
+        "createdAt"
+      limit 1
+    )
+  `;
+
+  const data = await sequelize.query(sql, {
+    type: QueryTypes.SELECT
+  });
+
+  const response = [];
+
+  const iter = data.length % 2 === 0 ? data.length / 2 : (data.length - 1) / 2;
+
+  for (let index = 0; index < iter; index++) {
+    const question = data[index*2]['body'].split("*[")[0];
+    const answerBody = data[index*2]['body']; 
+    let answer = answerBody.split('\n').find(item => item.includes(`*[ ${data[index*2 + 1]['body']} ]*`));
+    
+    if (answer) {
+      answer = answer.match(/\*\[\s\d\s\]\*\s-\s(.+)/)[1];
+    } else {
+      answer = answerBody;
     }
-  ]
+    
+    response.push({
+      question,
+      answer
+    });
+  }
+
+  return response;
 };
 
 export default TicketAbstractService;

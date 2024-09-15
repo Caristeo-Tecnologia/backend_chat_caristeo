@@ -197,6 +197,7 @@ const useStyles = makeStyles((theme) => ({
   const [whatsAppName, setWhatsAppName] = useState(null);
 
   const [openTicketMessageDialog, setOpenTicketMessageDialog] = useState(false);
+  const [openTicketAbstractDialog, setOpenTicketAbstractDialog] = useState(false);
   const { ticketId } = useParams();
   const isMounted = useRef(true);
   const { setCurrentTicket } = useContext(TicketsContext);
@@ -362,14 +363,13 @@ const useStyles = makeStyles((theme) => ({
 
   return (
     <React.Fragment key={ticket.id}>
-    <TicketAbstractDialog
+      <TicketAbstractDialog
         open={openTicketAbstractDialog}
         handleClose={() => setOpenTicketAbstractDialog(false)}
         ticketId={ticket.id}
       ></TicketAbstractDialog>
       <TicketMessagesDialog
         open={openTicketMessageDialog}
-
         handleClose={() => setOpenTicketMessageDialog(false)}
         ticketId={ticket.id}
       ></TicketMessagesDialog>
@@ -437,18 +437,20 @@ const useStyles = makeStyles((theme) => ({
                     />
                   </Tooltip>
                 )}
-                <Tooltip title="Visualizar resumo">
-                  <DescriptionOutlined
-                    onClick={() => setOpenTicketAbstractDialog(true)}
-                    fontSize="small"
-                    style={{
-                      color: blue[700],
-                      cursor: "pointer",
-                      marginLeft: 10,
-                      verticalAlign: "middle"
-                    }}
-                  />
-                </Tooltip>
+                {ticket.status != "closed" &&(
+                  <Tooltip title="Visualizar resumo">
+                    <DescriptionOutlined
+                      onClick={() => setOpenTicketAbstractDialog(true)}
+                      fontSize="small"
+                      style={{
+                        color: blue[700],
+                        cursor: "pointer",
+                        marginLeft: 10,
+                        verticalAlign: "middle"
+                      }}
+                    />
+                  </Tooltip>
+                )}
               </Typography>
               <ListItemSecondaryAction>
                 <Box className={classes.ticketInfo1}>{renderTicketInfo()}</Box>
