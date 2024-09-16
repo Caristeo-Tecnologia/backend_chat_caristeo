@@ -39,6 +39,7 @@ const TicketAbstractDialog = ({ ticketId, open, handleClose }) => {
             </ListItem>
           ))}
         </List>
+        {abstract.length === 0 && (<span>Nada para ver por aqui ainda</span>)}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="primary">

@@ -3,10 +3,11 @@ import sequelize from "../../database";
 
 const TicketAbstractService = async (ticketId: string) => {
   const sql = `
-  ;with cte as (
+    ;with cte as(
     select
       m.*,
-      row_number() over(order by m."createdAt") as sequence
+      row_number() over(
+      order by m."createdAt") as sequence
     from
       "Messages" m
     inner join "Tickets" t on
@@ -14,35 +15,22 @@ const TicketAbstractService = async (ticketId: string) => {
     where
       t.id = ${ticketId}
       and m."createdAt" >= t."pendingAt"
-  )
-  select
-    *
-  from
-    cte
-  where
-    cte."sequence" <= (
-      select
-        sequence + 1
-      from
-        cte
-      where
-        body like '%[ 999 ]%'
-      order by
-        "createdAt"
-      limit 1
     )
-    and cte."sequence" >= (
-      select
-        sequence
-      from
-        cte
-      where
-        "fromMe" = true
-      order by
-        "createdAt"
-      limit 1
-    )
-  `;
+    select * from (
+      select * from cte c1
+      where 
+        "fromQueue" = true and "hasOption" = true
+      union all
+      select * from cte c2
+      where (c2.sequence - 1) in (
+        select
+          sequence from cte c1
+        where 
+          "fromQueue" = true and "hasOption" = true)
+        and "fromMe" = false
+    ) as t1
+    order by sequence
+  `
 
   const data = await sequelize.query(sql, {
     type: QueryTypes.SELECT

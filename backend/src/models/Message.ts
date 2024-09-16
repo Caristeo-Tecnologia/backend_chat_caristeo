@@ -14,6 +14,7 @@ import Contact from "./Contact";
 import Ticket from "./Ticket";
 import Company from "./Company";
 import Queue from "./Queue";
+import QueueOption from "./QueueOption";
 
 @Table
 class Message extends Model<Message> {
@@ -41,6 +42,14 @@ class Message extends Model<Message> {
   @Default(false)
   @Column
   fromMe: boolean;
+
+  @Default(false)
+  @Column
+  fromQueue: boolean;
+
+  @Default(false)
+  @Column
+  hasOption: boolean;
 
   @Column(DataType.TEXT)
   body: string;
@@ -104,6 +113,13 @@ class Message extends Model<Message> {
 
   @BelongsTo(() => Queue)
   queue: Queue;
+
+  @ForeignKey(() => QueueOption)
+  @Column
+  queueOptionId: number;
+
+  @BelongsTo(() => QueueOption)
+  queueOption: QueueOption;
   
   @Default(false)
   @Column
