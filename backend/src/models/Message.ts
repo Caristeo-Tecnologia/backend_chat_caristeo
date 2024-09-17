@@ -113,13 +113,6 @@ class Message extends Model<Message> {
 
   @BelongsTo(() => Queue)
   queue: Queue;
-
-  @ForeignKey(() => QueueOption)
-  @Column
-  queueOptionId: number;
-
-  @BelongsTo(() => QueueOption)
-  queueOption: QueueOption;
   
   @Default(false)
   @Column
