@@ -1386,14 +1386,13 @@ const handleChartbot = async (
   if (messageBody == "#") {
     // voltar para o menu inicial
     await ticket.update({ queueOptionId: null, chatbot: false, queueId: null });
+    await verifyMessage(msg, ticket, ticket.contact, true, true);
     await verifyQueue(wbot, msg, ticket, ticket.contact);
     return;
   }
 
   if (messageBody == "x" || messageBody == "X") {
     UpdateTicketService({ticketData: {status: "closed"}, ticketId: ticket.id, companyId: ticket.companyId});
-    // await ticket.update({ status: "closed" });
-    // await SendWhatsAppMessage({ "body": "body", ticket });
     return;
   }
 
@@ -1837,19 +1836,19 @@ const handleMessage = async (
     // voltar para o menu inicial
 
     if (bodyMessage == "#") {
+      logger.info(`[bodyMessage]`);
       await ticket.update({
         queueOptionId: null,
         chatbot: false,
         queueId: null
       });
+      await verifyMessage(msg, ticket, contact, true, true);
       await verifyQueue(wbot, msg, ticket, ticket.contact);
       return;
     }
 
     if (bodyMessage == "x" || bodyMessage == "X") {
       UpdateTicketService({ticketData: {status: "closed"}, ticketId: ticket.id, companyId: ticket.companyId});
-      // await ticket.update({ status: "closed" });
-      // await SendWhatsAppMessage({ "body": "body", ticket });
       return;
     }
 

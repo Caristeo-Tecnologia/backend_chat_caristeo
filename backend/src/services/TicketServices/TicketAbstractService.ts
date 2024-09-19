@@ -19,7 +19,7 @@ const TicketAbstractService = async (ticketId: string) => {
     select * from (
       select * from cte c1
       where 
-        "fromQueue" = true and "hasOption" = true
+        "fromQueue" = true and "hasOption" = true and "fromMe" = true
       union all
       select * from cte c2
       where (c2.sequence - 1) in (
@@ -42,19 +42,21 @@ const TicketAbstractService = async (ticketId: string) => {
 
   for (let index = 0; index < iter; index++) {
     const question = data[index*2]['body'].split("*[")[0];
-    const answerBody = data[index*2]['body']; 
-    let answer = answerBody.split('\n').find(item => item.includes(`*[ ${data[index*2 + 1]['body']} ]*`));
+    const answerBody = data[index*2]['body'];
+    if (data[index*2 + 1]['body'] !== '0' && data[index*2 + 1]['body'] !== '#') {
+      let answer = answerBody.split('\n').find(item => item.includes(`*[ ${data[index*2 + 1]['body']} ]*`));
     
-    if (answer) {
-      answer = answer.match(/\*\[\s\d\s\]\*\s-\s(.+)/)[1];
-    } else {
-      answer = answerBody;
+      if (answer) {
+        answer = answer.match(/\*\[\s\d\s\]\*\s-\s(.+)/)[1];
+      } else {
+        answer = answerBody;
+      }
+      
+      response.push({
+        question,
+        answer
+      });
     }
-    
-    response.push({
-      question,
-      answer
-    });
   }
 
   return response;

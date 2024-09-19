@@ -68,8 +68,6 @@ const UpdateTicketService = async ({
       }
     });
 
-
-
     const ticket = await ShowTicketService(ticketId, companyId);
     const ticketTraking = await FindOrCreateATicketTrakingService({
       ticketId,
