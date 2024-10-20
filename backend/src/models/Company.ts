@@ -40,6 +40,9 @@ class Company extends Model<Company> {
   email: string;
 
   @Column
+  cpfCnpj: string;
+
+  @Column
   status: boolean;
 
   @Column
