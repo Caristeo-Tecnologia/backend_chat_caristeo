@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    image: chat_caristeo:latest
+    container_name: cont_chat_caristeo
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      BACKEND_URL: ${BACKEND_URL:-http://localhost}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+
+      DB_DIALECT: ${DB_DIALECT:-postgres}
+      DB_HOST: ${DB_HOST:-database-2.cdq8m6qo0oa8.us-east-1.rds.amazonaws.com}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASS: ${DB_PASS:-admin123}
+      DB_NAME: ${DB_NAME:-db_dev1}
+
+      JWT_SECRET: ${JWT_SECRET:-kZaOTd+YZpjRUyyuQUpigJaEMk4vcW4YOymKPZX0Ts8=}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dBSXqFg9TaNUEDXVp6fhMTRLBysP+j2DSqf7+raxD3A=}
+
+      REDIS_URI: ${REDIS_URI:-my-redis1-jtqmjv.serverless.use1.cache.amazonaws.com:6379}
+      REDIS_OPT_LIMITER_MAX: ${REDIS_OPT_LIMITER_MAX:-1}
+      REDIS_OPT_LIMITER_DURATION: ${REDIS_OPT_LIMITER_DURATION:-3000}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASS: ${REDIS_PASS:-123456}
+      REDIS_DBS: ${REDIS_DBS:-test_redis}
+      DB_DEBUG: ${DB_DEBUG:-true}
+
+      USER_LIMIT: ${USER_LIMIT:-10000}
+      CONNECTIONS_LIMIT: ${CONNECTIONS_LIMIT:-100000}
+      CLOSED_SEND_BY_ME: ${CLOSED_SEND_BY_ME:-true}
+
+      GERENCIANET_SANDBOX: ${GERENCIANET_SANDBOX:-false}
+      GERENCIANET_CLIENT_ID: ${GERENCIANET_CLIENT_ID:-Client_Id_Gerencianet}
+      GERENCIANET_CLIENT_SECRET: ${GERENCIANET_CLIENT_SECRET:-Client_Secret_Gerencianet}
+      GERENCIANET_PIX_CERT: ${GERENCIANET_PIX_CERT:-certificado-Gerencianet}
+      GERENCIANET_PIX_KEY: ${GERENCIANET_PIX_KEY:-chave pix gerencianet}
+
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_USER: ${MAIL_USER:-seu@gmail.com}
+      MAIL_PASS: ${MAIL_PASS:-SuaSenha}
+      MAIL_FROM: ${MAIL_FROM:-seu@gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-465}
+    ports:
+      - "${PORT:-9000}:${PORT:-9000}"
+      - "${PROXY_PORT:-8080}:${PROXY_PORT:-8080}"
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:alpine
+    container_name: redis_container
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASS:-123456}
+    ports:
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+
+  db:
+    image: postgres:alpine
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-admin123}
+      POSTGRES_DB: ${DB_NAME:-db_dev1}
+    ports:
+      - "${DB_PORT:-5432}:${DB_PORT:-5432}"

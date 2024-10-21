@@ -10,7 +10,7 @@ services:
       - REDIS_DATABASES=${REDIS_DBS}
     networks:
       - app_network
-Caristeo123@#
+
   db_postgres:
     image: postgres
     environment:

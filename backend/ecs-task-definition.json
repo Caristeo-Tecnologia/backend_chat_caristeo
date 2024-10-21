@@ -1,0 +1,178 @@
+{
+    "family": "chat_caristeo_task",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+        {
+            "name": "chat_caristeo",
+            "image": "861276092440.dkr.ecr.us-east-1.amazonaws.com/chat_caristeo:latest",
+            "essential": true,
+            "memory": 512,
+            "cpu": 256,
+            "portMappings": [
+                {
+                    "containerPort": 9000,
+                    "hostPort": 9000,
+                    "protocol": "tcp"
+                },
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp"
+                }
+            ],
+            "environment": [
+                {
+                    "name": "NODE_ENV",
+                    "value": "production"
+                },
+                {
+                    "name": "BACKEND_URL",
+                    "value": "http://localhost"
+                },
+                {
+                    "name": "FRONTEND_URL",
+                    "value": "https://main.d1usb2ouxvps6t.amplifyapp.com"
+                },
+                {
+                    "name": "PROXY_PORT",
+                    "value": "8080"
+                },
+                {
+                    "name": "PORT",
+                    "value": "9000"
+                },
+                {
+                    "name": "DB_DIALECT",
+                    "value": "postgres"
+                },
+                {
+                    "name": "DB_HOST",
+                    "value": "195.200.1.216"
+                },
+                {
+                    "name": "DB_PORT",
+                    "value": "5432"
+                },
+                {
+                    "name": "DB_USER",
+                    "value": "cchat"
+                },
+                {
+                    "name": "DB_PASS",
+                    "value": "a59877ab69"
+                },
+                {
+                    "name": "DB_NAME",
+                    "value": "cchat"
+                },
+                {
+                    "name": "JWT_SECRET",
+                    "value": "kZaOTd+YZpjRUyyuQUpigJaEMk4vcW4YOymKPZX0Ts8="
+                },
+                {
+                    "name": "JWT_REFRESH_SECRET",
+                    "value": "dBSXqFg9TaNUEDXVp6fhMTRLBysP+j2DSqf7+raxD3A="
+                },
+                {
+                    "name": "REDIS_URI",
+                    "value": "redis://54.227.168.196:6379"
+                },
+                {
+                    "name": "REDIS_OPT_LIMITER_MAX",
+                    "value": "1"
+                },
+                {
+                    "name": "REDIS_OPT_LIMITER_DURATION",
+                    "value": "3000"
+                },
+                {
+                    "name": "REDIS_PORT",
+                    "value": "6379"
+                },
+                {
+                    "name": "REDIS_PASS",
+                    "value": "123456"
+                },
+                {
+                    "name": "REDIS_DBS",
+                    "value": "test_redis"
+                },
+                {
+                    "name": "DB_DEBUG",
+                    "value": "true"
+                },
+                {
+                    "name": "USER_LIMIT",
+                    "value": "10000"
+                },
+                {
+                    "name": "CONNECTIONS_LIMIT",
+                    "value": "100000"
+                },
+                {
+                    "name": "CLOSED_SEND_BY_ME",
+                    "value": "true"
+                },
+                {
+                    "name": "GERENCIANET_SANDBOX",
+                    "value": "false"
+                },
+                {
+                    "name": "GERENCIANET_CLIENT_ID",
+                    "value": "Client_Id_Gerencianet"
+                },
+                {
+                    "name": "GERENCIANET_CLIENT_SECRET",
+                    "value": "Client_Secret_Gerencianet"
+                },
+                {
+                    "name": "GERENCIANET_PIX_CERT",
+                    "value": "certificado-Gerencianet"
+                },
+                {
+                    "name": "GERENCIANET_PIX_KEY",
+                    "value": "chave pix gerencianet"
+                },
+                {
+                    "name": "MAIL_HOST",
+                    "value": "smtp.gmail.com"
+                },
+                {
+                    "name": "MAIL_USER",
+                    "value": "seu@gmail.com"
+                },
+                {
+                    "name": "MAIL_PASS",
+                    "value": "SuaSenha"
+                },
+                {
+                    "name": "MAIL_FROM",
+                    "value": "seu@gmail.com"
+                },
+                {
+                    "name": "MAIL_PORT",
+                    "value": "465"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/chat_caristeo-logs",
+                    "mode": "non-blocking",
+                    "awslogs-create-group": "true",
+                    "max-buffer-size": "25m",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            }
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "executionRoleArn": "arn:aws:iam::861276092440:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::861276092440:role/ecsTaskExecutionRole"
+}
