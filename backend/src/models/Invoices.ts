@@ -22,6 +22,9 @@ class Invoices extends Model<Invoices> {
   detail: string;
 
   @Column
+  paymentUrl: string;
+
+  @Column
   status: string;
 
   @Column

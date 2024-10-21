@@ -107,6 +107,7 @@ const Invoices = () => {
   const handleCloseContactModal = () => {
     setSelectedContactId(null);
     setContactModalOpen(false);
+    setPageNumber(1);
   };
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -198,6 +199,7 @@ const Invoices = () => {
               <TableCell align="center">Valor</TableCell>
               <TableCell align="center">Data Venc.</TableCell>
               <TableCell align="center">Status</TableCell>
+              <TableCell align="center">Link de pagamento</TableCell>
               <TableCell align="center">Ação</TableCell>
             </TableRow>
           </TableHead>
@@ -210,6 +212,7 @@ const Invoices = () => {
                   <TableCell style={{ fontWeight: 'bold' }} align="center">{invoices.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
                   <TableCell align="center">{moment(invoices.dueDate).format("DD/MM/YYYY")}</TableCell>
                   <TableCell style={{ fontWeight: 'bold' }} align="center">{rowStatus(invoices)}</TableCell>
+                  <TableCell style={{ fontWeight: 'bold' }} align="center"> {rowStatus(invoices) !== "Pago" ? <a href={invoices.paymentUrl} target="_blank">pagar</a> : '-'}</TableCell>
                   <TableCell align="center">
                     {rowStatus(invoices) !== "Pago" ?
                       <Button
@@ -218,7 +221,7 @@ const Invoices = () => {
                         color="secondary"
                         onClick={() => handleOpenContactModal(invoices)}
                       >
-                        PAGAR
+                        Selecionar plano
                       </Button> :
                       <Button
                         size="small"

@@ -19,8 +19,8 @@ const CreateWebhookService = async () => {
 
   const data = {
     "name": "payments",
-    "url": "https://c358-78-30-14-137.ngrok-free.app/asaas/webhook",
-    "email": "telesborges@outlook.com",
+    "url": process.env.ASAAS_WEBHOOK_URL,
+    "email": process.env.ASAAS_WEBHOOK_EMAIL,
     "enabled": true,
     "interrupted": false,
     "apiVersion": 3,
