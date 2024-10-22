@@ -27,7 +27,7 @@ jobs:
 
       - name: Build and push Docker image to ECR
         env:
-          ECR_URL: 861276092440.dkr.ecr.$AWS_REGION.amazonaws.com
+          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com
           AWS_REGION: us-east-1
         run: |
           docker build -t chat_caristeo .
@@ -38,7 +38,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: AKIA4RCAOHAMJJ3VEJUZ
           AWS_SECRET_ACCESS_KEY: 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
-          ECR_URL: 861276092440.dkr.ecr.$AWS_REGION.amazonaws.com
+          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com
           AWS_REGION: us-east-1
         run: |
           aws ecs register-task-definition \
