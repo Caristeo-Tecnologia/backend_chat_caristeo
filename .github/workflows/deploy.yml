@@ -26,8 +26,10 @@ jobs:
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_URL
 
       - name: Build and push Docker image to ECR
+        env:
+          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com
         run: |
-          docker build -t chat_caristeo:latest .
+          docker build -t chat_caristeo .
           docker tag chat_caristeo:latest $ECR_URL/chat_caristeo:latest
           docker push $ECR_URL/chat_caristeo:latest
 
