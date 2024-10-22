@@ -3,7 +3,7 @@ name: Deploy to ECS
 on:
   push:
     branches:
-      - feat\deploy_new_version
+      - feat/deploy_new_version
 
 jobs:
   deploy:
