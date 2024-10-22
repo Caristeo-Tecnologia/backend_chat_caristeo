@@ -34,5 +34,9 @@ jobs:
           docker push $ECR_URL/chat_caristeo:latest
 
       - name: Deploy to Amazon ECS
+        env:
+          AWS_ACCESS_KEY_ID: AKIA4RCAOHAMJJ3VEJUZ
+          AWS_SECRET_ACCESS_KEY: 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
+          AWS_REGION: us-east-1
         run: |
           aws ecs update-service --cluster chat_caristeo_cluster --service chat_caristeo_service01 --force-new-deployment --region us-east-1 --debug
