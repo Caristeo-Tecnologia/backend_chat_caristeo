@@ -27,7 +27,7 @@ jobs:
 
       - name: Build and push Docker image to ECR
         run: |
-          docker build -t chat_caristeo .
+          docker build -t chat_caristeo:latest .
           docker tag chat_caristeo:latest $ECR_URL/chat_caristeo:latest
           docker push $ECR_URL/chat_caristeo:latest
 
