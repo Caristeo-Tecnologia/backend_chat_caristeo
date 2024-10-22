@@ -21,7 +21,7 @@ jobs:
           AWS_ACCESS_KEY_ID: AKIA4RCAOHAMJJ3VEJUZ
           AWS_SECRET_ACCESS_KEY: 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
           AWS_REGION: us-east-1
-          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com/chat_caristeo:latest
+          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com
         run: |
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_URL
 
