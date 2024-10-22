@@ -1,0 +1,31 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - feat/deploy_new_version
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 861276092440.dkr.ecr.us-east-1.amazonaws.com
+
+      - name: Build and push Docker image to ECR
+        run: |
+          docker build -t chat_caristeo .
+          docker tag chat_caristeo:latest 861276092440.dkr.ecr.us-east-1.amazonaws.com/chat_caristeo:latest
+          docker push 861276092440.dkr.ecr.us-east-1.amazonaws.com/chat_caristeo:latest
+
+      - name: Deploy to Amazon ECS
+        run: |
+          aws ecs update-service --cluster chat_caristeo_cluster --service chat_caristeo_service01  --force-new-deployment
