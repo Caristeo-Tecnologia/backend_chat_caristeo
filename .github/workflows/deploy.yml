@@ -18,10 +18,10 @@ jobs:
 
       - name: Log in to Amazon ECR
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          ECR_URL: ${{ secrets.ECR_URL }}
+          AWS_ACCESS_KEY_ID: AKIA4RCAOHAMJJ3VEJUZ
+          AWS_SECRET_ACCESS_KEY: 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
+          AWS_REGION: us-east-1
+          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com/chat_caristeo:latest
         run: |
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_URL }}
 
