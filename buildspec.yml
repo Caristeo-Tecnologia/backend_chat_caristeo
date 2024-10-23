@@ -19,3 +19,7 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Updating ECS Service with new image
       - aws ecs update-service --cluster chat_caristeo_cluster --service chat_caristeo_service01 --force-new-deployment
+
+AKIA4RCAOHAMJJ3VEJUZ
+
+ZpbNIDGToBRs2H4NZsReqwVm4FYJfvJxmHzJsMCD
