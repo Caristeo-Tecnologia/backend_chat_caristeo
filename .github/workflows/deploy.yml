@@ -34,14 +34,15 @@ jobs:
           docker tag chat_caristeo:latest $ECR_URL/chat_caristeo:latest
           docker push $ECR_URL/chat_caristeo:latest
 
-      - name: Update ECS task definition
+      - name: Update ECS task definition and force deployment
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:  ${{ secrets.AWS_REGION }}
           ECR_URL: ${{ secrets.ECR_URL }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws ecs register-task-definition \
+          # Register a new task definition revision
+          NEW_TASK_REVISION=$(aws ecs register-task-definition \
             --family chat_caristeo_task \
             --network-mode awsvpc \
             --container-definitions '[{
@@ -82,12 +83,15 @@ jobs:
             --cpu "256" \
             --memory "512" \
             --execution-role-arn arn:aws:iam::861276092440:role/ecsTaskExecutionRole \
-            --task-role-arn arn:aws:iam::861276092440:role/ecsTaskExecutionRole
+            --task-role-arn arn:aws:iam::861276092440:role/ecsTaskExecutionRole \
+            --query 'taskDefinition.revision' --output text)
 
-      - name: Deploy to Amazon ECS
-        env:
-          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.AWS_REGION }}
-        run: |
-          aws ecs update-service --cluster chat_caristeo_cluster --service chat_caristeo_service01 --force-new-deployment --region $AWS_REGION --debug
+          echo "New task revision: $NEW_TASK_REVISION"
+
+          # Update the ECS service with the new task definition
+          aws ecs update-service \
+            --cluster chat_caristeo_cluster \
+            --service chat_caristeo_service01 \
+            --task-definition chat_caristeo_task:${NEW_TASK_REVISION} \
+            --force-new-deployment \
+            --region $AWS_REGION
