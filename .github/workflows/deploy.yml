@@ -18,17 +18,17 @@ jobs:
 
       - name: Log in to Amazon ECR
         env:
-          AWS_ACCESS_KEY_ID: AKIA4RCAOHAMJJ3VEJUZ
-          AWS_SECRET_ACCESS_KEY: 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
-          AWS_REGION: us-east-1
-          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_URL: ${{ secrets.ECR_URL }}
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
 
       - name: Build and push Docker image to ECR
         env:
-          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com
-          AWS_REGION: us-east-1
+          ECR_URL: ${{ secrets.ECR_URL }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           docker build -t chat_caristeo .
           docker tag chat_caristeo:latest $ECR_URL/chat_caristeo:latest
@@ -36,10 +36,10 @@ jobs:
 
       - name: Update ECS task definition
         env:
-          AWS_ACCESS_KEY_ID: AKIA4RCAOHAMJJ3VEJUZ
-          AWS_SECRET_ACCESS_KEY: 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
-          ECR_URL: 861276092440.dkr.ecr.us-east-1.amazonaws.com
-          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ECR_URL: ${{ secrets.ECR_URL }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           aws ecs register-task-definition \
             --family chat_caristeo_task \
@@ -61,13 +61,13 @@ jobs:
                 {"name": "PROXY_PORT", "value": "8080"},
                 {"name": "PORT", "value": "9000"},
                 {"name": "DB_DIALECT", "value": "postgres"},
-                {"name": "DB_HOST", "value": "195.200.1.216"},
+                {"name": "DB_HOST", "value": "'${{ secrets.DB_HOST }}'"},
                 {"name": "DB_PORT", "value": "5432"},
-                {"name": "DB_USER", "value": "cchat"},
-                {"name": "DB_PASS", "value": "a59877ab69"},
-                {"name": "DB_NAME", "value": "cchat"},
-                {"name": "JWT_SECRET", "value": "kZaOTd+YZpjRUyyuQUpigJaEMk4vcW4YOymKPZX0Ts8="},
-                {"name": "REDIS_URI", "value": "redis://54.227.168.196:6379"}
+                {"name": "DB_USER", "value": "'${{ secrets.DB_USER }}'"},
+                {"name": "DB_PASS", "value": "'${{ secrets.DB_PASS }}'"},
+                {"name": "DB_NAME", "value": "'${{ secrets.DB_NAME }}'"},
+                {"name": "JWT_SECRET", "value": "'${{ secrets.JWT_SECRET }}'"},
+                {"name": "REDIS_URI", "value": "'${{ secrets.REDIS_URI }}'"}
               ],
               "logConfiguration": {
                 "logDriver": "awslogs",
@@ -86,8 +86,8 @@ jobs:
 
       - name: Deploy to Amazon ECS
         env:
-          AWS_ACCESS_KEY_ID: AKIA4RCAOHAMJJ3VEJUZ
-          AWS_SECRET_ACCESS_KEY: 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
-          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:  ${{ secrets.AWS_REGION }}
         run: |
           aws ecs update-service --cluster chat_caristeo_cluster --service chat_caristeo_service01 --force-new-deployment --region $AWS_REGION --debug
