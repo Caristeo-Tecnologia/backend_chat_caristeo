@@ -12,6 +12,7 @@ companyRoutes.get("/companies/:id", isAuth, CompanyController.show);
 companyRoutes.post("/companies", isAuth, isSuper, CompanyController.store);
 companyRoutes.put("/companies/:id", isAuth, isSuper, CompanyController.update);
 companyRoutes.put("/companies/:id/schedules",isAuth,CompanyController.updateSchedules);
+companyRoutes.put("/companies/:id/plan",isAuth,CompanyController.updatePlan);
 companyRoutes.delete("/companies/:id", isAuth, isSuper, CompanyController.remove);
 companyRoutes.post("/companies/cadastro", CompanyController.store);
 

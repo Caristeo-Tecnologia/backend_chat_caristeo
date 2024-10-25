@@ -4,7 +4,8 @@ import { logger } from "../utils/logger";
 import CreateAsaasSubscriptionService from "../services/AsaasSubscriptionService/CreateAsaasSubscriptionService";
 import CreateAsaasPaymentLinkService from "../services/AsaasPaymentLinkService/CreateAsaasPaymentLinkService";
 import Invoices from "../models/Invoices";
-import { Op } from "sequelize";
+import Company from "../models/Company";
+import ShowPlanService from "../services/PlanService/ShowPlanService";
 
 export const webhook = async (
   req: Request,
@@ -12,12 +13,57 @@ export const webhook = async (
 ): Promise<Response> => {
   const { event, payment } = req.body;
 
-  if (event === "PAYMENT_CONFIRMED") {
+  if (event === "PAYMENT_CREATED") {
+    logger.info(`[webhook:PAYMENT_CREATED] ${JSON.stringify(req.body)}`);
+
+    if (!payment.subscription) {
+      logger.info(`[webhook] assinatura não identificada ${JSON.stringify(req.body)}`);
+      return res.status(200).json({});;
+    }
+
+    const company = await Company.findOne({where: { asaasCustomerId: payment.customer }});
+
+    if (!company) {
+      logger.info(`[webhook] compania não identificada para o id fornecido ${JSON.stringify(req.body)}`);
+      return res.status(200).json({});
+    }
+
+    const plan = await ShowPlanService(company.planId);
+
+    logger.info(`[webhook] Invoice criada ${JSON.stringify(req.body)}`);
+
+    await Invoices.create({
+      detail: plan.name,
+      status: 'open',
+      value: plan.value,
+      updatedA: new Date(),
+      createdAt: new Date(),
+      dueDate: payment.dueDate,
+      companyId: company.id,
+      paymentUrl: payment.invoiceUrl,
+      asaasPaymentId: payment.id
+    });
+  }
+
+  if (event === "PAYMENT_DELETED") {
+    logger.info(`[webhook:PAYMENT_DELETED] ${JSON.stringify(req.body)}`);
+
     const invoice = await Invoices.findOne({
       where: {
-        paymentUrl: {
-          [Op.like]: `%${payment.paymentLink}%`
-        }
+        asaasPaymentId: payment.id
+      }
+    });
+
+    if (invoice) {
+      await invoice.update({ status: "deleted" });
+    }
+  }
+
+  if (event === "PAYMENT_CONFIRMED") {
+    logger.info(`[webhook:PAYMENT_CONFIRMED] ${JSON.stringify(req.body)}`);
+    const invoice = await Invoices.findOne({
+      where: {
+        asaasPaymentId: payment.id
       }
     });
 

@@ -16,6 +16,7 @@ import { verify } from "jsonwebtoken";
 import User from "../models/User";
 import ShowPlanCompanyService from "../services/CompanyService/ShowPlanCompanyService";
 import ListCompaniesPlanService from "../services/CompanyService/ListCompaniesPlanService";
+import UpdatePlanCompanyService from "../services/CompanyService/UpdatePlanCompanyService";
 
 type IndexQuery = {
   searchParam: string;
@@ -41,6 +42,7 @@ type CompanyData = {
   campaignsEnabled?: boolean;
   dueDate?: string;
   recurrence?: string;
+  cpfCnpj?: string;
 };
 
 type SchedulesData = {
@@ -123,6 +125,21 @@ export const updateSchedules = async (
   const company = await UpdateSchedulesService({
     id,
     schedules
+  });
+
+  return res.status(200).json(company);
+};
+
+export const updatePlan = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { planId } = req.body;
+  const { id } = req.params;
+
+  const company = await UpdatePlanCompanyService({
+    id,
+    planId
   });
 
   return res.status(200).json(company);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer, useContext } from "react";
 import { toast } from "react-toastify";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -30,6 +30,11 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
 
 import moment from "moment";
+import usePlans from "../../hooks/usePlans";
+import { Grid, InputLabel, MenuItem, Select } from "@material-ui/core";
+import { Field } from "formik";
+import useAuth from "../../hooks/useAuth.js";
+import { AuthContext } from "../../context/Auth/AuthContext";
 
 const reducer = (state, action) => {
   if (action.type === "LOAD_INVOICES") {
@@ -95,6 +100,19 @@ const Invoices = () => {
   const [storagePlans, setStoragePlans] = React.useState([]);
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const { user } = useContext(AuthContext);
+  const [selectedPlanId, setSelectedPlanId] = useState(user?.company?.planId);
+
+  const [plans, setPlans] = useState([]);
+	const { list: listPlans } = usePlans();
+
+	useEffect(() => {
+		async function fetchData() {
+			const list = await listPlans();
+			setPlans(list);
+		}
+		fetchData();
+	}, []);
 
 
   const handleOpenContactModal = (invoices) => {
@@ -114,21 +132,22 @@ const Invoices = () => {
     setPageNumber(1);
   }, [searchParam]);
 
+  const fetchInvoices = async () => {
+    try {
+      const { data } = await api.get("/invoices/all", {
+        params: { searchParam, pageNumber },
+      });
+      dispatch({ type: "LOAD_INVOICES", payload: data });
+      setHasMore(data.hasMore);
+      setLoading(false);
+    } catch (err) {
+      toastError(err);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
-    const delayDebounceFn = setTimeout(() => {
-      const fetchInvoices = async () => {
-        try {
-          const { data } = await api.get("/invoices/all", {
-            params: { searchParam, pageNumber },
-          });
-          dispatch({ type: "LOAD_INVOICES", payload: data });
-          setHasMore(data.hasMore);
-          setLoading(false);
-        } catch (err) {
-          toastError(err);
-        }
-      };
+    const delayDebounceFn = setTimeout(() => {    
       fetchInvoices();
     }, 500);
     return () => clearTimeout(delayDebounceFn);
@@ -165,12 +184,30 @@ const Invoices = () => {
     if (status === "paid") {
       return "Pago";
     }
+
+    if (status === "deleted") {
+      return "Cancelado";
+    }
+
     if (dias < 0) {
       return "Vencido";
     } else {
       return "Em Aberto"
     }
 
+  }
+
+  const handleChangePlan = async (ev) => {
+    try {
+      const value = ev.target.value;
+      setSelectedPlanId(value);
+
+      await api.put(`/companies/${user.company.id}/plan`, {planId: value});
+      fetchInvoices();
+      toast.success('Sua assinatura foi atualizada com sucesso.');
+    } catch (error) {
+      toastError('Falha ao atualizar assinatura.');
+    }
   }
 
   return (
@@ -184,7 +221,29 @@ const Invoices = () => {
 
       ></SubscriptionModal>
       <MainHeader>
-        <Title>Faturas</Title>
+        <Grid container  justifyContent="space-between">
+          <Grid item>
+            <Title>Faturas</Title>
+          </Grid>
+          <Grid item xs={4}>
+            <InputLabel htmlFor="plan-selection">Plano</InputLabel>
+            <Select
+              variant="outlined"
+              value={selectedPlanId}
+              fullWidth
+              id="plan-selection"
+              label="Plano"
+              onChange={handleChangePlan}
+              required
+            >
+              {plans.map((plan, key) => (
+                <MenuItem key={key} value={plan.id}>
+                  {plan.name} - Atendentes: {plan.users} - WhatsApp: {plan.connections} - Filas: {plan.queues} - R$ {plan.value}
+                </MenuItem>
+              ))}
+            </Select>
+        </Grid>
+        </Grid>
       </MainHeader>
       <Paper
         className={classes.mainPaper}
@@ -200,7 +259,6 @@ const Invoices = () => {
               <TableCell align="center">Data Venc.</TableCell>
               <TableCell align="center">Status</TableCell>
               <TableCell align="center">Link de pagamento</TableCell>
-              <TableCell align="center">Ação</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -212,9 +270,10 @@ const Invoices = () => {
                   <TableCell style={{ fontWeight: 'bold' }} align="center">{invoices.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
                   <TableCell align="center">{moment(invoices.dueDate).format("DD/MM/YYYY")}</TableCell>
                   <TableCell style={{ fontWeight: 'bold' }} align="center">{rowStatus(invoices)}</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }} align="center"> {rowStatus(invoices) !== "Pago" ? <a href={invoices.paymentUrl} target="_blank">pagar</a> : '-'}</TableCell>
-                  <TableCell align="center">
-                    {rowStatus(invoices) !== "Pago" ?
+                  <TableCell style={{ fontWeight: 'bold' }} align="center"> {!["Pago", "Cancelado"].includes(rowStatus(invoices)) ? <a href={invoices.paymentUrl} target="_blank">pagar</a> : '-'}</TableCell>
+                  
+                    {
+                    /* rowStatus(invoices) !== "Pago" ?
                       <Button
                         size="small"
                         variant="outlined"
@@ -225,14 +284,11 @@ const Invoices = () => {
                       </Button> :
                       <Button
                         size="small"
-                        variant="outlined" 
-                        /* color="secondary"
-                        disabled */
+                        variant="outlined"
                       >
                         PAGO 
-                      </Button>}
-
-                  </TableCell>
+                      </Button> */
+                      }
                 </TableRow>
               ))}
               {loading && <TableRowSkeleton columns={4} />}

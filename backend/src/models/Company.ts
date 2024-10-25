@@ -50,6 +50,12 @@ class Company extends Model<Company> {
 
   @Column
   recurrence: string;
+  
+  @Column
+  asaasCustomerId: string;
+
+  @Column
+  asaasSubscriptionId: string;
 
   @Column({
     type: DataType.JSONB

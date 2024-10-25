@@ -1,5 +1,5 @@
-import axios from 'axios';
-import AppError from '../../errors/AppError';
+import axios from "axios";
+import AppError from "../../errors/AppError";
 
 const ListAsaasSubscriptionService = async (params: any) => {
   const url = `${process.env.ASAAS_URL}/api/v3/subscriptions`;
@@ -7,7 +7,7 @@ const ListAsaasSubscriptionService = async (params: any) => {
   const subscriptions = await axios.get(url, {
     headers: {
       "Content-Type": "application/json",
-      "access_token": process.env.ASAAS_TOKEN,
+      access_token: process.env.ASAAS_TOKEN,
       "User-Agent": "Insomnia/2024.4.1"
     },
     params

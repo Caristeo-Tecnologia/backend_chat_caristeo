@@ -28,6 +28,7 @@ import { ClosedAllOpenTickets } from "./services/WbotServices/wbotClosedTickets"
 import Invoices from "./models/Invoices";
 import ShowPlanService from "./services/PlanService/ShowPlanService";
 import CreateAsaasPaymentLinkService from "./services/AsaasPaymentLinkService/CreateAsaasPaymentLinkService";
+import CreateAsaasSubscriptionService from "./services/AsaasSubscriptionService/CreateAsaasSubscriptionService";
 
 const nodemailer = require("nodemailer");
 const CronJob = require("cron").CronJob;
@@ -830,58 +831,78 @@ async function handleLoginStatus(job) {
   }
 }
 
-async function handleInvoiceCreate() {
-  logger.info("Iniciando geração de boletos");
+async function handleAsaas() {
+  logger.info("Iniciando integração com a Asaas");
   const job = new CronJob("*/5 * * * * *", async () => {
-    const companies = await Company.findAll();
-
-    companies.map(async company => {
-      let dueDate = company.dueDate;
-      const date = moment(dueDate).format();
-      const timestamp = moment().format();
-      const hoje = moment(moment()).format("DD/MM/yyyy");
-      let vencimento = moment(dueDate).format("DD/MM/yyyy");
-
-      let diff = moment(vencimento, "DD/MM/yyyy").diff(
-        moment(hoje, "DD/MM/yyyy")
-      );
-      let dias = moment.duration(diff).asDays();
-
-      if (dias < 20) {
-        const invoices = await Invoices.findAll({
-          where: {
-            dueDate: {
-              [Op.like]: `${moment(dueDate).format("yyyy-MM-DD")}%`
-            },
-            companyId: company.id
-          }
-        });
-
-        if (invoices.length === 0) {
-          const plan = await ShowPlanService(company.planId);
-
-          const invoice = await Invoices.create({
-            detail: plan.name,
-            status: 'open',
-            value: plan.value,
-            "updatedAt": timestamp,
-            "createdAt": timestamp,
-            "dueDate": date,
-            "companyId": company.id
-          });
-
-          const paymentLink = await CreateAsaasPaymentLinkService(company.id, invoice.id, plan.id);
-          await invoice.update({ paymentUrl: paymentLink.url });
-        }
+    const companies = await Company.findAll({
+      where: {
+        asaasSubscriptionId: { [Op.is]: null },
+        cpfCnpj: { [Op.ne]: null }
       }
+    });
+    companies.forEach(async company => {
+      logger.info(`Criando assinatura para a compania: ${company.id}`);
+      await CreateAsaasSubscriptionService(company.id);
     });
   });
   job.start();
 }
 
+handleAsaas();
+
+// async function handleInvoiceCreate() {
+//   logger.info("Iniciando geração de boletos");
+//   const job = new CronJob("*/5 * * * * *", async () => {
+//     const companies = await Company.findAll();
+
+//     companies.map(async company => {
+//       let dueDate = company.dueDate;
+//       const date = moment(dueDate).format();
+//       const timestamp = moment().format();
+//       const hoje = moment(moment()).format("DD/MM/yyyy");
+//       let vencimento = moment(dueDate).format("DD/MM/yyyy");
+
+//       let diff = moment(vencimento, "DD/MM/yyyy").diff(
+//         moment(hoje, "DD/MM/yyyy")
+//       );
+//       let dias = moment.duration(diff).asDays();
+
+//       if (dias < 20) {
+//         const invoices = await Invoices.findAll({
+//           where: {
+//             dueDate: {
+//               [Op.like]: `${moment(dueDate).format("yyyy-MM-DD")}%`
+//             },
+//             companyId: company.id
+//           }
+//         });
+
+//         if (invoices.length === 0) {
+//           const plan = await ShowPlanService(company.planId);
+
+//           const invoice = await Invoices.create({
+//             detail: plan.name,
+//             status: 'open',
+//             value: plan.value,
+//             "updatedAt": timestamp,
+//             "createdAt": timestamp,
+//             "dueDate": date,
+//             "companyId": company.id
+//           });
+
+//           const paymentLink = await CreateAsaasPaymentLinkService(company.id, invoice.id, plan.id);
+//           await invoice.update({ paymentUrl: paymentLink.url });
+//         }
+//       }
+//     });
+//   });
+//   job.start();
+// }
+
 handleCloseTicketsAutomatic();
 
-handleInvoiceCreate();
+// ToDo: Inativado em 25/10/2024 pois a geração de cobranças será gerenciada pela Asaas
+// handleInvoiceCreate();
 
 export async function startQueueProcess() {
   logger.info("Iniciando processamento de filas");

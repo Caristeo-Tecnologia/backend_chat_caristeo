@@ -2,6 +2,8 @@ import axios from "axios";
 import ShowCompanyService from "../CompanyService/ShowCompanyService";
 import ListAsaasCustomerService from "./ListAsaasCustomerService";
 import AppError from "../../errors/AppError";
+import { logger } from "../../utils/logger";
+import ShowAsaasCustomerService from "./ShowAsaasCustomerService";
 
 const CreateAsaasCustomerService = async (companyId: number) => {
   const company = await ShowCompanyService(companyId);
@@ -10,10 +12,20 @@ const CreateAsaasCustomerService = async (companyId: number) => {
     throw new AppError("CPF/CNPJ é obrigatório.");
   }
 
-  const customers = await ListAsaasCustomerService({ externalReference: company.id });
+  let customer;
 
-  if (customers?.length) {
-    return customers[0];
+  if (company.asaasCustomerId) {
+    customer = await ShowAsaasCustomerService(company.asaasCustomerId);
+  } else {
+    const customers = await ListAsaasCustomerService({
+      externalReference: company.id
+    });
+    customer = customers[0];
+  }
+
+  if (customer) {
+    company.update({ asaasCustomerId: customer.id });
+    return customer;
   }
 
   const url = `${process.env.ASAAS_URL}/api/v3/customers`;
@@ -21,10 +33,10 @@ const CreateAsaasCustomerService = async (companyId: number) => {
   const headers = {
     "Content-Type": "application/json",
     "User-Agent": "Insomnia/2024.4.1",
-    "access_token": process.env.ASAAS_TOKEN
+    access_token: process.env.ASAAS_TOKEN
   };
 
-  const data = {
+  const body = {
     name: company.name,
     email: company.email,
     phone: company.phone,
@@ -35,11 +47,17 @@ const CreateAsaasCustomerService = async (companyId: number) => {
   };
 
   // ToDo: avaliar erros na resposta
-  const res = await axios.post(url, data, {
+  const res = await axios.post(url, body, {
     headers
   });
 
-  return res.data.data;
+  const data = res.data.data;
+
+  logger.info(`[CreateAsaasCustomerService] ${JSON.stringify(res.data)}`);
+
+  company.update({ asaasCustomerId: data.id });
+
+  return data;
 };
 
 export default CreateAsaasCustomerService;

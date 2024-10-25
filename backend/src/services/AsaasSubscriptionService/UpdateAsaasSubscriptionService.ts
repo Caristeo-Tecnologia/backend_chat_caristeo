@@ -4,8 +4,11 @@ import ShowCompanyService from "../CompanyService/ShowCompanyService";
 import ShowPlanService from "../PlanService/ShowPlanService";
 import ListAsaasSubscriptionService from "./ListAsaasSubscriptionService";
 import AppError from "../../errors/AppError";
+import Invoices from "../../models/Invoices";
+import { Op } from "sequelize";
+import DeleteAsaasPaymentsService from "../AsaasPaymentsService/DeleteAsaasPaymentsService";
 
-const CreateAsaasSubscriptionService = async (companyId: number) => {
+const UpdateAsaasSubscriptionService = async (companyId: number) => {
   const company = await ShowCompanyService(companyId);
 
   if (!company.planId) {
@@ -24,13 +27,6 @@ const CreateAsaasSubscriptionService = async (companyId: number) => {
     customer: customer.id
   });
 
-  if (subscription?.length) {
-    await company.update({ asaasSubscriptionId: subscription[0].id });
-    return subscription[0];
-  }
-
-  const url = `${process.env.ASAAS_URL}/api/v3/subscriptions`;
-
   const headers = {
     "Content-Type": "application/json",
     "User-Agent": "Insomnia/2024.4.1",
@@ -40,15 +36,50 @@ const CreateAsaasSubscriptionService = async (companyId: number) => {
   const body = {
     customer: customer.id,
     billingType: "UNDEFINED",
-    nextDueDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
+    nextDueDate: `${new Date().getFullYear()}-${
+      new Date().getMonth() + 1
+    }-${new Date().getDate()}`,
     value: plan.value,
     cycle: "MONTHLY",
     description: plan.name
   };
 
+  const invoices = await Invoices.findAll({
+    where: {
+      companyId: company.id,
+      status: "open",
+      asaasPaymentId: { [Op.ne]: null }
+    }
+  });
+
+  if (subscription?.length) {
+    // ToDo: tratar resposta
+    const res = await axios.put(
+      `${process.env.ASAAS_URL}/api/v3/subscriptions/${subscription[0].id}`,
+      body,
+      {
+        headers
+      }
+    );
+
+    invoices.forEach(async invoice => {
+      await DeleteAsaasPaymentsService(invoice.asaasPaymentId);
+    });
+
+    return res.data;
+  }
+
   // ToDo: tratar resposta
-  const res = await axios.post(url, body, {
-    headers
+  const res = await axios.post(
+    `${process.env.ASAAS_URL}/api/v3/subscriptions`,
+    body,
+    {
+      headers
+    }
+  );
+
+  invoices.forEach(async invoice => {
+    await DeleteAsaasPaymentsService(invoice.asaasPaymentId);
   });
 
   const data = res.data;
@@ -58,4 +89,4 @@ const CreateAsaasSubscriptionService = async (companyId: number) => {
   return data;
 };
 
-export default CreateAsaasSubscriptionService;
+export default UpdateAsaasSubscriptionService;
