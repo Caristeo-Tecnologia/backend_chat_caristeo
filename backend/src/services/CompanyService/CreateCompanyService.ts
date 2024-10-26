@@ -3,6 +3,7 @@ import AppError from "../../errors/AppError";
 import Company from "../../models/Company";
 import User from "../../models/User";
 import Setting from "../../models/Setting";
+import CreateAsaasSubscriptionService from "../AsaasSubscriptionService/CreateAsaasSubscriptionService";
 
 interface CompanyData {
   name: string;
@@ -15,6 +16,13 @@ interface CompanyData {
   dueDate?: string;
   recurrence?: string;
   cpfCnpj?: string;
+  postalCode?: string;
+  creditCard?: {
+    name: string;
+    cardNumber: string;
+    expiryDate: string;
+    cvv: string;
+  }
 }
 
 const CreateCompanyService = async (
@@ -30,8 +38,17 @@ const CreateCompanyService = async (
     campaignsEnabled,
     dueDate,
     recurrence,
-    cpfCnpj
+    cpfCnpj,
+    postalCode,
+    creditCard
   } = companyData;
+
+  /* 
+  name: "",
+	cardNumber: "",
+	expiryDate: "",
+	cvv: "",
+  */
 
   const companySchema = Yup.object().shape({
     name: Yup.string()
@@ -70,10 +87,10 @@ const CreateCompanyService = async (
     cpfCnpj
   });
 
-  const user = await User.create({
+  await User.create({
     name: company.name,
     email: company.email,
-    password: companyData.password,
+    password: password,
     profile: "admin",
     companyId: company.id
   });
@@ -301,6 +318,28 @@ const CreateCompanyService = async (
       await setting.update({ value: `${campaignsEnabled}` });
     }
   }
+
+  const _creditCard = {
+    creditCard: {
+      holderName: creditCard.name,
+      number: creditCard.cardNumber,
+      expiryMonth: creditCard.expiryDate.split(" / ")[0],
+      expiryYear: creditCard.expiryDate.split(" / ")[1],
+      ccv: creditCard.cvv
+    },
+    creditCardHolderInfo: {
+      name: creditCard.name,
+      email: email,
+      cpfCnpj: cpfCnpj?.replace(/\D/g, ""),
+      postalCode: postalCode?.replace(/\D/g, ""),
+      addressNumber: "0",
+      addressComplement: null,
+      phone: phone?.replace(/\D/g, ""),
+      mobilePhone: phone?.replace(/\D/g, "")
+    }
+  }
+
+  await CreateAsaasSubscriptionService(company.id, _creditCard);
 
   return company;
 };

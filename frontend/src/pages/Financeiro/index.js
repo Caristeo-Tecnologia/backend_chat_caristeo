@@ -206,7 +206,7 @@ const Invoices = () => {
       fetchInvoices();
       toast.success('Sua assinatura foi atualizada com sucesso.');
     } catch (error) {
-      toastError('Falha ao atualizar assinatura.');
+      toastError(error);
     }
   }
 

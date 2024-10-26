@@ -51,7 +51,7 @@ const CreateAsaasCustomerService = async (companyId: number) => {
     headers
   });
 
-  const data = res.data.data;
+  const data = res.data;
 
   logger.info(`[CreateAsaasCustomerService] ${JSON.stringify(res.data)}`);
 

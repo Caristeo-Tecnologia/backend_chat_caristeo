@@ -5,7 +5,27 @@ import ShowPlanService from "../PlanService/ShowPlanService";
 import ListAsaasSubscriptionService from "./ListAsaasSubscriptionService";
 import AppError from "../../errors/AppError";
 
-const CreateAsaasSubscriptionService = async (companyId: number) => {
+type CreditCard = {
+  creditCard: {
+    holderName: string;
+    number: string;
+    expiryMonth: string;
+    expiryYear: string;
+    ccv: string;
+  },
+  creditCardHolderInfo: {
+    name: string;
+    email: string;
+    cpfCnpj: string;
+    postalCode: string;
+    addressNumber: string;
+    addressComplement: string;
+    phone: string;
+    mobilePhone: string;
+  }
+}
+
+const CreateAsaasSubscriptionService = async (companyId: number, creditCard?: CreditCard) => {
   const company = await ShowCompanyService(companyId);
 
   if (!company.planId) {
@@ -37,13 +57,17 @@ const CreateAsaasSubscriptionService = async (companyId: number) => {
     access_token: process.env.ASAAS_TOKEN
   };
 
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 3);
+
   const body = {
     customer: customer.id,
-    billingType: "UNDEFINED",
-    nextDueDate: `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`,
+    billingType: creditCard ? "CREDIT_CARD" : "UNDEFINED",
+    nextDueDate: `${dueDate.getFullYear()}-${dueDate.getMonth() + 1}-${dueDate.getDate()}`,
     value: plan.value,
     cycle: "MONTHLY",
-    description: plan.name
+    description: plan.name,
+    ...creditCard
   };
 
   // ToDo: tratar resposta

@@ -7,6 +7,7 @@ import AppError from "../../errors/AppError";
 import Invoices from "../../models/Invoices";
 import { Op } from "sequelize";
 import DeleteAsaasPaymentsService from "../AsaasPaymentsService/DeleteAsaasPaymentsService";
+import { logger } from "../../utils/logger";
 
 const UpdateAsaasSubscriptionService = async (companyId: number) => {
   const company = await ShowCompanyService(companyId);
@@ -33,12 +34,12 @@ const UpdateAsaasSubscriptionService = async (companyId: number) => {
     access_token: process.env.ASAAS_TOKEN
   };
 
+  const dueDate = new Date();
+
   const body = {
     customer: customer.id,
     billingType: "UNDEFINED",
-    nextDueDate: `${new Date().getFullYear()}-${
-      new Date().getMonth() + 1
-    }-${new Date().getDate()}`,
+    nextDueDate: `${dueDate.getFullYear()}-${dueDate.getMonth() + 1}-${dueDate.getDate()}`,
     value: plan.value,
     cycle: "MONTHLY",
     description: plan.name

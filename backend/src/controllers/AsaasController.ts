@@ -61,6 +61,7 @@ export const webhook = async (
 
   if (event === "PAYMENT_CONFIRMED") {
     logger.info(`[webhook:PAYMENT_CONFIRMED] ${JSON.stringify(req.body)}`);
+
     const invoice = await Invoices.findOne({
       where: {
         asaasPaymentId: payment.id
@@ -70,6 +71,14 @@ export const webhook = async (
     if (invoice) {
       await invoice.update({ status: "paid" });
     }
+
+    const expiresAt = new Date(payment.dueDate);
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    const date = expiresAt.toISOString().split("T")[0];
+
+    const company = await Company.findOne({where: { asaasCustomerId: payment.customer }});
+
+    await company.update({ dueDate: date });
   }
 
   return res.status(200).json({});
