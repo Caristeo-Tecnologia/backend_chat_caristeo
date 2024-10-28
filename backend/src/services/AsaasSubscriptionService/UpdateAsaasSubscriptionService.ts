@@ -34,12 +34,10 @@ const UpdateAsaasSubscriptionService = async (companyId: number) => {
     access_token: process.env.ASAAS_TOKEN
   };
 
-  const dueDate = new Date();
-
   const body = {
     customer: customer.id,
     billingType: "UNDEFINED",
-    nextDueDate: `${dueDate.getFullYear()}-${dueDate.getMonth() + 1}-${dueDate.getDate()}`,
+    nextDueDate: company.dueDate,
     value: plan.value,
     cycle: "MONTHLY",
     description: plan.name

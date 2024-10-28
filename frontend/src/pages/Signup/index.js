@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { Formik, Form, Field } from "formik";
 import usePlans from "../../hooks/usePlans";
 import Button from "@material-ui/core/Button";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
 import Link from "@material-ui/core/Link";
@@ -60,6 +61,7 @@ const PaymentSchema = Yup.object().shape({
 const SignUp = () => {
   const classes = useStyles();
   const history = useHistory();
+  const [loading, setLoading] = useState(false);
 
   const initialState = {
     name: "",
@@ -79,7 +81,9 @@ const SignUp = () => {
   });
 
   const dueDate = moment().add(3, "day").format();
+
   const handleSignUp = async (values) => {
+    setLoading(true);
     Object.assign(values, { recurrence: "MENSAL" });
     Object.assign(values, { dueDate: dueDate });
     Object.assign(values, { status: "t" });
@@ -103,6 +107,8 @@ const SignUp = () => {
     } catch (err) {
       toastError(err);
     }
+
+    setLoading(false);
   };
 
   const [plans, setPlans] = useState([]);
@@ -272,7 +278,8 @@ const SignUp = () => {
                 variant="contained"
                 color="primary"
                 className={classes.submit}
-				disabled={isSubmitting}
+                disabled={loading}
+                startIcon={loading ? <CircularProgress color="inherit" size={20} /> : null}
               >
                 {i18n.t("signup.buttons.submit")}
               </Button>

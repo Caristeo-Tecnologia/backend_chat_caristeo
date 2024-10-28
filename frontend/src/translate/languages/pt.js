@@ -121,30 +121,31 @@ const messages = {
         title: {
           add: "Adicionar WhatsApp",
           edit: "Editar WhatsApp",
-        },		
-		 tabs: {
+        },
+        tabs: {
           general: "Geral",
           messages: "Mensagens",
           assessments: "Avaliações",
           integrations: "Integrações",
           schedules: "Horário de expediente",
-		 },
+        },
         form: {
           name: "Nome",
           default: "Padrão",
           sendIdQueue: "Fila",
           timeSendQueue: "Redirecionar para fila em X minutos",
           queueRedirection: "Redirecionamento de Fila",
-		  outOfHoursMessage: "Mensagem de fora de expediente",
-          queueRedirectionDesc: "Selecione uma fila para os contatos que não possuem fila serem redirecionados",
+          outOfHoursMessage: "Mensagem de fora de expediente",
+          queueRedirectionDesc:
+            "Selecione uma fila para os contatos que não possuem fila serem redirecionados",
           prompt: "Prompt",
           //maxUseBotQueues: "Enviar bot x vezes",
           //timeUseBotQueues: "Intervalo em minutos entre envio de bot",
           expiresTicket: "Encerrar chats abertos após x minutos",
           expiresInactiveMessage: "Mensagem de encerramento por inatividade",
-		  greetingMessage: "Mensagem de saudação",
+          greetingMessage: "Mensagem de saudação",
           complationMessage: "Mensagem de conclusão",
-		  sendIdQueue: "Fila",
+          sendIdQueue: "Fila",
         },
         buttons: {
           okAdd: "Adicionar",
@@ -160,22 +161,24 @@ const messages = {
         title: "Contatos",
         toasts: {
           deleted: "Contato excluído com sucesso!",
-		  deletedAll: "Todos contatos excluídos com sucesso!",
+          deletedAll: "Todos contatos excluídos com sucesso!",
         },
-		  searchPlaceholder: "Pesquisar...",
-          confirmationModal: {
+        searchPlaceholder: "Pesquisar...",
+        confirmationModal: {
           deleteTitle: "Deletar ",
           deleteAllTitle: "Deletar Todos",
           importTitle: "Importar contatos",
-          deleteMessage: "Tem certeza que deseja deletar este contato? Todos os tickets relacionados serão perdidos.",
-          deleteAllMessage: "Tem certeza que deseja deletar todos os contatos? Todos os tickets relacionados serão perdidos.",
+          deleteMessage:
+            "Tem certeza que deseja deletar este contato? Todos os tickets relacionados serão perdidos.",
+          deleteAllMessage:
+            "Tem certeza que deseja deletar todos os contatos? Todos os tickets relacionados serão perdidos.",
           importMessage: "Deseja importar todos os contatos do telefone?",
         },
         buttons: {
           import: "Importar Contatos",
           add: "Adicionar Contato",
           export: "Exportar Contatos",
-          delete: "Excluir Todos Contatos"
+          delete: "Excluir Todos Contatos",
         },
         table: {
           name: "Nome",
@@ -203,7 +206,7 @@ const messages = {
           typebotKeywordRestart: "Palavra para reiniciar o fluxo",
           typebotRestartMessage: "Mensagem ao reiniciar a conversa",
           typebotUnknownMessage: "Mensagem de opção inválida",
-          typebotDelayMessage: "Intervalo (ms) entre mensagens",   
+          typebotDelayMessage: "Intervalo (ms) entre mensagens",
         },
         buttons: {
           okAdd: "Adicionar",
@@ -217,14 +220,14 @@ const messages = {
           editSuccess: "Integração editada com sucesso.",
         },
       },
-	  sideMenu: {
-            name: "Menu Lateral Inicial",
-            note: "Se habilitado, o menu lateral irá iniciar fechado",
-            options: {
-              enabled: "Aberto",
-              disabled: "Fechado",
-            },
-          },
+      sideMenu: {
+        name: "Menu Lateral Inicial",
+        note: "Se habilitado, o menu lateral irá iniciar fechado",
+        options: {
+          enabled: "Aberto",
+          disabled: "Fechado",
+        },
+      },
       promptModal: {
         form: {
           name: "Nome",
@@ -277,7 +280,7 @@ const messages = {
           email: "Email",
           extraName: "Nome do campo",
           extraValue: "Valor",
-          whatsapp: "Conexão Origem: "
+          whatsapp: "Conexão Origem: ",
         },
         buttons: {
           addExtraInfo: "Adicionar informação",
@@ -372,7 +375,7 @@ const messages = {
       uploads: {
         titles: {
           titleUploadMsgDragDrop: "ARRASTE E SOLTE ARQUIVOS NO CAMPO ABAIXO",
-          titleFileList: "Lista de arquivo(s)"
+          titleFileList: "Lista de arquivo(s)",
         },
       },
       ticketsManager: {
@@ -422,7 +425,7 @@ const messages = {
         buttons: {
           accept: "Aceitar",
           closed: "Finalizar",
-          reopen: "Reabrir"
+          reopen: "Reabrir",
         },
       },
       newTicketModal: {
@@ -458,7 +461,7 @@ const messages = {
           queueIntegration: "Integrações",
         },
         appBar: {
-          notRegister:"Sem notificações",
+          notRegister: "Sem notificações",
           user: {
             profile: "Perfil",
             logout: "Sair",
@@ -676,7 +679,7 @@ const messages = {
             confirmation: "Confirmação",
             contactList: "Lista de Contato",
             tagList: "Lista de Tags",
-            fileList: "Lista de Arquivos"
+            fileList: "Lista de Arquivos",
           },
           buttons: {
             add: "Adicionar",
@@ -700,8 +703,8 @@ const messages = {
         },
       },
       announcements: {
-        active: 'Ativo',
-        inactive: 'Inativo',
+        active: "Ativo",
+        inactive: "Inativo",
         title: "Informativos",
         searchPlaceholder: "Pesquisa",
         buttons: {
@@ -752,7 +755,7 @@ const messages = {
       queues: {
         title: "Filas & Chatbot",
         table: {
-		  id:"ID",
+          id: "ID",
           name: "Nome",
           color: "Cor",
           greeting: "Mensagem de saudação",
@@ -774,7 +777,7 @@ const messages = {
       users: {
         title: "Usuários",
         table: {
-		  id: "ID",
+          id: "ID",
           name: "Nome",
           email: "Email",
           profile: "Perfil",
@@ -821,8 +824,8 @@ const messages = {
         confirmationModal: {
           deleteTitle: "Você tem certeza que quer excluir esta Tag?",
           deleteMessage: "Esta ação não pode ser revertida.",
-		  deleteAllMessage: "Tem certeza que deseja deletar todas as Tags?",
-		  deleteAllTitle: "Deletar Todos",
+          deleteAllMessage: "Tem certeza que deseja deletar todas as Tags?",
+          deleteAllTitle: "Deletar Todos",
         },
         table: {
           name: "Nome",
@@ -832,10 +835,10 @@ const messages = {
         },
         buttons: {
           add: "Nova Tag",
-		  deleteAll: "Deletar Todas",
+          deleteAll: "Deletar Todas",
         },
         toasts: {
-		  deletedAll: "Todas Tags excluídas com sucesso!",
+          deletedAll: "Todas Tags excluídas com sucesso!",
           deleted: "Tag excluído com sucesso.",
         },
       },
@@ -908,7 +911,7 @@ const messages = {
         },
         confirmationModal: {
           title: "Deletar o ticket",
-		  titleFrom: "do contato ",
+          titleFrom: "do contato ",
           message:
             "Atenção! Todas as mensagens relacionadas ao ticket serão perdidas.",
         },
@@ -966,6 +969,10 @@ const messages = {
           "Esta cor já está em uso, escolha outra.",
         ERR_WAPP_GREETING_REQUIRED:
           "A mensagem de saudação é obrigatório quando há mais de uma fila.",
+        ERR_COMPANY_NAME_ALREADY_EXISTS:
+          "Já existe uma empresa cadastrada com este nome.",
+        ERR_USER_EMAIL_ALREADY_EXISTS:
+          "Já existe um usuário cadastrado com este email.",
       },
     },
   },
