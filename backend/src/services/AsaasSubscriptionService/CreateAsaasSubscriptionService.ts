@@ -57,13 +57,10 @@ const CreateAsaasSubscriptionService = async (companyId: number, creditCard?: Cr
     access_token: process.env.ASAAS_TOKEN
   };
 
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 3);
-
   const body = {
     customer: customer.id,
     billingType: creditCard ? "CREDIT_CARD" : "UNDEFINED",
-    nextDueDate: `${dueDate.getFullYear()}-${dueDate.getMonth() + 1}-${dueDate.getDate()}`,
+    nextDueDate: company.dueDate,
     value: plan.value,
     cycle: "MONTHLY",
     description: plan.name,

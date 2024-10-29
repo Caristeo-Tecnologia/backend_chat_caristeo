@@ -1,6 +1,8 @@
 import AppError from "../../errors/AppError";
 import Company from "../../models/Company";
 import Setting from "../../models/Setting";
+import { logger } from "../../utils/logger";
+import UpdateAsaasSubscriptionService from "../AsaasSubscriptionService/UpdateAsaasSubscriptionService";
 
 interface CompanyData {
   name: string;
@@ -13,6 +15,13 @@ interface CompanyData {
   dueDate?: string;
   recurrence?: string;
   cpfCnpj?: string;
+  postalCode?: string;
+  creditCard?: {
+    name: string;
+    cardNumber: string;
+    expiryDate: string;
+    cvv: string;
+  };
 }
 
 const UpdateCompanyService = async (
@@ -28,7 +37,9 @@ const UpdateCompanyService = async (
     campaignsEnabled,
     dueDate,
     recurrence,
-    cpfCnpj
+    cpfCnpj,
+    postalCode,
+    creditCard
   } = companyData;
 
   if (!company) {
@@ -39,12 +50,15 @@ const UpdateCompanyService = async (
     name,
     phone,
     email,
-    status,
+    //status,
     planId,
-    dueDate,
-    recurrence,
-    cpfCnpj
+    //dueDate,
+    //recurrence,
+    cpfCnpj,
+    postalCode
   });
+
+  await company.reload();
 
   if (companyData.campaignsEnabled !== undefined) {
     const [setting, created] = await Setting.findOrCreate({
@@ -61,6 +75,30 @@ const UpdateCompanyService = async (
     if (!created) {
       await setting.update({ value: `${campaignsEnabled}` });
     }
+  }
+
+  if (creditCard.cardNumber && creditCard.cvv && creditCard.expiryDate && creditCard.name) {
+    const _creditCard = {
+      creditCard: {
+        holderName: creditCard.name,
+        number: creditCard.cardNumber,
+        expiryMonth: creditCard.expiryDate.split(" / ")[0],
+        expiryYear: creditCard.expiryDate.split(" / ")[1],
+        ccv: creditCard.cvv
+      },
+      creditCardHolderInfo: {
+        name: creditCard.name,
+        email: company.email,
+        cpfCnpj: company.cpfCnpj?.replace(/\D/g, ""),
+        postalCode: company.postalCode?.replace(/\D/g, ""),
+        addressNumber: "0",
+        addressComplement: null,
+        phone: company.phone?.replace(/\D/g, ""),
+        mobilePhone: company.phone?.replace(/\D/g, "")
+      }
+    };
+
+    await UpdateAsaasSubscriptionService(company.id, _creditCard);
   }
 
   return company;

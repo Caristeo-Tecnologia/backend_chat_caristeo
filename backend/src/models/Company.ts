@@ -56,6 +56,9 @@ class Company extends Model<Company> {
 
   @Column
   asaasSubscriptionId: string;
+  
+  @Column
+  postalCode: string;
 
   @Column({
     type: DataType.JSONB

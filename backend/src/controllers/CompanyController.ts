@@ -43,6 +43,7 @@ type CompanyData = {
   dueDate?: string;
   recurrence?: string;
   cpfCnpj?: string;
+  postalCode?: string;
 };
 
 type SchedulesData = {

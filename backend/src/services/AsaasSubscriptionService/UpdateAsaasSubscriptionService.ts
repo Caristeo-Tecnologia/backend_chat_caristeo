@@ -7,9 +7,28 @@ import AppError from "../../errors/AppError";
 import Invoices from "../../models/Invoices";
 import { Op } from "sequelize";
 import DeleteAsaasPaymentsService from "../AsaasPaymentsService/DeleteAsaasPaymentsService";
-import { logger } from "../../utils/logger";
 
-const UpdateAsaasSubscriptionService = async (companyId: number) => {
+type CreditCard = {
+  creditCard: {
+    holderName: string;
+    number: string;
+    expiryMonth: string;
+    expiryYear: string;
+    ccv: string;
+  },
+  creditCardHolderInfo: {
+    name: string;
+    email: string;
+    cpfCnpj: string;
+    postalCode: string;
+    addressNumber: string;
+    addressComplement: string;
+    phone: string;
+    mobilePhone: string;
+  }
+}
+
+const UpdateAsaasSubscriptionService = async (companyId: number, creditCard?: CreditCard) => {
   const company = await ShowCompanyService(companyId);
 
   if (!company.planId) {
@@ -36,11 +55,12 @@ const UpdateAsaasSubscriptionService = async (companyId: number) => {
 
   const body = {
     customer: customer.id,
-    billingType: "UNDEFINED",
+    billingType: creditCard ? "CREDIT_CARD" : "UNDEFINED",
     nextDueDate: company.dueDate,
     value: plan.value,
     cycle: "MONTHLY",
-    description: plan.name
+    description: plan.name,
+    ...creditCard
   };
 
   const invoices = await Invoices.findAll({

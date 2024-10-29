@@ -97,7 +97,8 @@ const CreateCompanyService = async (
     planId,
     dueDate,
     recurrence,
-    cpfCnpj
+    cpfCnpj,
+    postalCode
   });
 
   await User.create({
