@@ -43,7 +43,7 @@ const CreateAsaasCustomerService = async (companyId: number) => {
     cpfCnpj: company.cpfCnpj,
     mobilePhone: company.phone,
     externalReference: company.id,
-    notificationDisabled: false
+    notificationDisabled: true
   };
 
   // ToDo: avaliar erros na resposta
@@ -52,8 +52,6 @@ const CreateAsaasCustomerService = async (companyId: number) => {
   });
 
   const data = res.data;
-
-  logger.info(`[CreateAsaasCustomerService] ${JSON.stringify(res.data)}`);
 
   company.update({ asaasCustomerId: data.id });
 
