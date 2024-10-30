@@ -33,11 +33,12 @@ jobs:
           docker build -t chat_caristeo .
           docker tag chat_caristeo:latest $ECR_URL/chat_caristeo:latest
           docker push $ECR_URL/chat_caristeo:latest
-      - name: Update ECS task definition and force deployment
+
+      - name: Update ECS task definition
         env:
-          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION:  ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           ECR_URL: ${{ secrets.ECR_URL }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -96,9 +97,32 @@ jobs:
 
           echo "New task revision: $NEW_TASK_REVISION"
 
-          aws ecs update-service \
-            --cluster chat_caristeo_cluster \
-            --service chat_caristeo_service01 \
-            --task-definition chat_caristeo_task:${NEW_TASK_REVISION} \
-            --force-new-deployment \
-            --region $AWS_REGION
+      - name: Create or update ECS service
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          SERVICE_NAME="chat_caristeo_service01"
+          CLUSTER_NAME="chat_caristeo_cluster"
+
+          # Check if the service exists
+          SERVICE_EXISTS=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME --query "services[0].serviceArn" --output text)
+
+          if [ "$SERVICE_EXISTS" == "None" ]; then
+            echo "Creating new ECS service..."
+            aws ecs create-service \
+              --cluster $CLUSTER_NAME \
+              --service-name $SERVICE_NAME \
+              --task-definition chat_caristeo_task:${NEW_TASK_REVISION} \
+              --desired-count 1 \
+              --launch-type FARGATE \
+              --network-configuration "awsvpcConfiguration={subnets=[subnet-0526bb332d7e9171b,subnet-0b3bef5cb7ac09f45,subnet-00a6d305981ceab17],securityGroups=[sg-064f90788739ccf79],assignPublicIp=ENABLED}"
+          else
+            echo "Updating existing ECS service..."
+            aws ecs update-service \
+              --cluster $CLUSTER_NAME \
+              --service $SERVICE_NAME \
+              --task-definition chat_caristeo_task:${NEW_TASK_REVISION} \
+              --force-new-deployment
+          fi
