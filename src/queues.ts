@@ -902,7 +902,6 @@ export async function startQueueProcess() {
 
   userMonitor.process("VerifyLoginStatus", handleLoginStatus);
 
-  //queueMonitor.process("VerifyQueueStatus", handleVerifyQueue);
 
   scheduleMonitor.add(
     "Verify",
