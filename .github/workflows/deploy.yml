@@ -96,6 +96,7 @@ jobs:
             --query 'taskDefinition.revision' --output text)
 
           echo "New task revision: $NEW_TASK_REVISION"
+          echo "::set-output name=new_task_revision::$NEW_TASK_REVISION"
 
       - name: Create or update ECS service
         env:
@@ -105,6 +106,9 @@ jobs:
         run: |
           SERVICE_NAME="chat_caristeo_service01"
           CLUSTER_NAME="chat_caristeo_cluster"
+
+          NEW_TASK_REVISION="${{ steps.update_task.outputs.new_task_revision }}"
+          echo "New task revision ao executar o serviço: $NEW_TASK_REVISION"
 
           # Check if the service exists
           SERVICE_EXISTS=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME --query "services[0].serviceArn" --output text)
