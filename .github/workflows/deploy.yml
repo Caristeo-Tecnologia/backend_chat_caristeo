@@ -85,7 +85,7 @@ jobs:
             ]')
 
           NEW_TASK_REVISION=$(aws ecs register-task-definition \
-            --family chat_caristeo_task \
+            --family chat_caristeo_task01 \
             --network-mode awsvpc \
             --container-definitions "$CONTAINER_DEFINITIONS" \
             --requires-compatibilities FARGATE \
@@ -105,8 +105,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          SERVICE_NAME="chat_caristeo_service01"
-          CLUSTER_NAME="chat_caristeo_cluster"
+          SERVICE_NAME="chat_caristeo_service02"
+          CLUSTER_NAME="chat_caristeo_cluster01"
 
           NEW_TASK_REVISION="${{ env.NEW_TASK_REVISION }}"
 
@@ -120,7 +120,7 @@ jobs:
             aws ecs create-service \
               --cluster $CLUSTER_NAME \
               --service-name $SERVICE_NAME \
-              --task-definition chat_caristeo_task:${NEW_TASK_REVISION} \
+              --task-definition chat_caristeo_task01:${NEW_TASK_REVISION} \
               --desired-count 1 \
               --launch-type FARGATE \
               --network-configuration "awsvpcConfiguration={subnets=[subnet-0526bb332d7e9171b,subnet-0b3bef5cb7ac09f45,subnet-00a6d305981ceab17],securityGroups=[sg-064f90788739ccf79],assignPublicIp=ENABLED}"
@@ -129,6 +129,6 @@ jobs:
             aws ecs update-service \
               --cluster $CLUSTER_NAME \
               --service $SERVICE_NAME \
-              --task-definition chat_caristeo_task:${NEW_TASK_REVISION} \
+              --task-definition chat_caristeo_task01:${NEW_TASK_REVISION} \
               --force-new-deployment
           fi
