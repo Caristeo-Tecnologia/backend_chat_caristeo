@@ -40,45 +40,48 @@ jobs:
           AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION:  ${{ secrets.AWS_REGION }}
           ECR_URL: ${{ secrets.ECR_URL }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          REDIS_URI: ${{ secrets.REDIS_URI }}
         run: |
-          # Register a new task definition revision
+          CONTAINER_DEFINITIONS=$(jq -n \
+            --arg ecr_url "$ECR_URL/chat_caristeo:latest" \
+            '[
+              {
+                "name": "chat_caristeo",
+                "image": $ecr_url,
+                "essential": true,
+                "memory": 512,
+                "cpu": 256,
+                "portMappings": [
+                  {"containerPort": 9000, "hostPort": 9000, "protocol": "tcp"},
+                  {"containerPort": 8080, "hostPort": 8080, "protocol": "tcp"}
+                ],
+                "environment": [
+                  {"name": "NODE_ENV", "value": "production"},
+                  {"name": "BACKEND_URL", "value": "http://localhost"},
+                  {"name": "FRONTEND_URL", "value": "https://main.d1usb2ouxvps6t.amplifyapp.com"},
+                  {"name": "PROXY_PORT", "value": "8080"},
+                  {"name": "PORT", "value": "9000"},
+                  {"name": "DB_DIALECT", "value": "postgres"},
+                  {"name": "DB_HOST", "value": $DB_HOST},
+                  {"name": "DB_PORT", "value": "5432"},
+                  {"name": "DB_USER", "value": $DB_USER},
+                  {"name": "DB_PASS", "value": $DB_PASS},
+                  {"name": "DB_NAME", "value": $DB_NAME},
+                  {"name": "JWT_SECRET", "value": $JWT_SECRET},
+                  {"name": "REDIS_URI", "value": $REDIS_URI}
+                ]
+              }
+            ]')
+
           NEW_TASK_REVISION=$(aws ecs register-task-definition \
             --family chat_caristeo_task \
             --network-mode awsvpc \
-            --container-definitions '[{
-              "name": "chat_caristeo",
-              "image": "'$ECR_URL'/chat_caristeo:latest",
-              "essential": true,
-              "memory": 512,
-              "cpu": 256,
-              "portMappings": [
-                {"containerPort": 9000, "hostPort": 9000, "protocol": "tcp"},
-                {"containerPort": 8080, "hostPort": 8080, "protocol": "tcp"}
-              ],
-              "environment": [
-                {"name": "NODE_ENV", "value": "production"},
-                {"name": "BACKEND_URL", "value": "http://localhost"},
-                {"name": "FRONTEND_URL", "value": "https://main.d1usb2ouxvps6t.amplifyapp.com"},
-                {"name": "PROXY_PORT", "value": "8080"},
-                {"name": "PORT", "value": "9000"},
-                {"name": "DB_DIALECT", "value": "postgres"},
-                {"name": "DB_HOST", "value": "'${{ secrets.DB_HOST }}'"},
-                {"name": "DB_PORT", "value": "5432"},
-                {"name": "DB_USER", "value": "'${{ secrets.DB_USER }}'"},
-                {"name": "DB_PASS", "value": "'${{ secrets.DB_PASS }}'"},
-                {"name": "DB_NAME", "value": "'${{ secrets.DB_NAME }}'"},
-                {"name": "JWT_SECRET", "value": "'${{ secrets.JWT_SECRET }}'"},
-                {"name": "REDIS_URI", "value": "'${{ secrets.REDIS_URI }}'"}
-              ],
-              "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                  "awslogs-group": "/ecs/chat_caristeo-logs",
-                  "awslogs-region": "'$AWS_REGION'",
-                  "awslogs-stream-prefix": "ecs"
-                }
-              }
-            }]' \
+            --container-definitions "$CONTAINER_DEFINITIONS" \
             --requires-compatibilities FARGATE \
             --cpu "256" \
             --memory "512" \
@@ -88,7 +91,6 @@ jobs:
 
           echo "New task revision: $NEW_TASK_REVISION"
 
-          # Update the ECS service with the new task definition
           aws ecs update-service \
             --cluster chat_caristeo_cluster \
             --service chat_caristeo_service01 \
