@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import {
   Box,
   Button,
+  CircularProgress,
   Grid,
   InputLabel,
   MenuItem,
@@ -21,6 +22,7 @@ import { toast } from "react-toastify";
 
 const CompanyForm = () => {
   const { user } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
   const { find: findCompany } = useCompanies();
   const [plans, setPlans] = useState([]);
   const { list: listPlans } = usePlans();
@@ -53,16 +55,19 @@ const CompanyForm = () => {
   }, []);
 
   const handleSaveCompany = async () => {
+    setLoading(true);
     try {
-      await api.put(`/companies/${user.companyId}`, 
-        {...formik.values, creditCard }
-      );
+      await api.put(`/companies/${user.companyId}`, {
+        ...formik.values,
+        creditCard,
+      });
       toast.success("Dados atualizados com sucesso!");
     } catch (error) {
       console.error(error);
       toastError(error);
     }
-  }
+    setLoading(false);
+  };
 
   return (
     <form onSubmit={formik.handleSubmit}>
@@ -155,7 +160,16 @@ const CompanyForm = () => {
           <PaymentForm onChange={setCreditCard} />
         </Grid>
         <Grid item xs={12}>
-          <Button type="submit" color="primary" variant="outlined" fullWidth disabled={!formik.isValid || !formik.touched}>
+          <Button
+            type="submit"
+            color="primary"
+            variant="outlined"
+            fullWidth
+            disabled={!formik.isValid || !formik.touched || loading}
+            startIcon={
+              loading ? <CircularProgress color="inherit" size={20} /> : null
+            }
+          >
             Atualizar
           </Button>
         </Grid>
