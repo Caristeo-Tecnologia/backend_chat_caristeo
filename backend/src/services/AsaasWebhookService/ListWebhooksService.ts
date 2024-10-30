@@ -2,7 +2,7 @@ import AppError from "../../errors/AppError";
 import axios from 'axios';
 
 const ListWebhooksService = async (params: any) => {
-    const url = `${process.env.ASAAS_URL}/api/v3/webhooks`;
+    const url = `${process.env.ASAAS_URL}/v3/webhooks`;
 
     const webhooks = await axios.get(url, {
       headers: {

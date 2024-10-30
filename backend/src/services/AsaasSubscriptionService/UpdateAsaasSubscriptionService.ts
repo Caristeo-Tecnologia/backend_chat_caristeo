@@ -74,7 +74,7 @@ const UpdateAsaasSubscriptionService = async (companyId: number, creditCard?: Cr
   if (subscription?.length) {
     // ToDo: tratar resposta
     const res = await axios.put(
-      `${process.env.ASAAS_URL}/api/v3/subscriptions/${subscription[0].id}`,
+      `${process.env.ASAAS_URL}/v3/subscriptions/${subscription[0].id}`,
       body,
       {
         headers
@@ -90,7 +90,7 @@ const UpdateAsaasSubscriptionService = async (companyId: number, creditCard?: Cr
 
   // ToDo: tratar resposta
   const res = await axios.post(
-    `${process.env.ASAAS_URL}/api/v3/subscriptions`,
+    `${process.env.ASAAS_URL}/v3/subscriptions`,
     body,
     {
       headers

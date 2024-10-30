@@ -49,7 +49,7 @@ const CreateAsaasSubscriptionService = async (companyId: number, creditCard?: Cr
     return subscription[0];
   }
 
-  const url = `${process.env.ASAAS_URL}/api/v3/subscriptions`;
+  const url = `${process.env.ASAAS_URL}/v3/subscriptions`;
 
   const headers = {
     "Content-Type": "application/json",

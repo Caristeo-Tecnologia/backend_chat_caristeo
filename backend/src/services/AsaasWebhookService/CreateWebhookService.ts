@@ -9,7 +9,7 @@ const CreateWebhookService = async () => {
     return webhooks[0];
   }
 
-  const url = `${process.env.ASAAS_URL}/api/v3/webhooks`;
+  const url = `${process.env.ASAAS_URL}/v3/webhooks`;
 
   const headers = {
     "Content-Type": "application/json",

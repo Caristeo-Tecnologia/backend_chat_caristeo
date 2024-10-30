@@ -2,7 +2,7 @@ import axios from 'axios';
 import AppError from '../../errors/AppError';
 
 const ListAsaasPaymentsService = async (subscriptionId: string) => {
-  const url = `${process.env.ASAAS_URL}/api/v3/subscriptions/${subscriptionId}/payments`;
+  const url = `${process.env.ASAAS_URL}/v3/subscriptions/${subscriptionId}/payments`;
 
   const payments = await axios.get(url, {
     headers: {

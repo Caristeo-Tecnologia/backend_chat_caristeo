@@ -7,7 +7,7 @@ const CreateAsaasPaymentLinkService = async (companyId: number, invoiceId: numbe
   const company = await ShowCompanyService(companyId);
   const plan = await ShowPlanService(planId ?? company.planId);
 
-  const url = `${process.env.ASAAS_URL}/api/v3/paymentLinks`;
+  const url = `${process.env.ASAAS_URL}/v3/paymentLinks`;
 
   const headers = {
     "Content-Type": "application/json",

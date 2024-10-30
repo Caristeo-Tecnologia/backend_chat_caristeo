@@ -2,7 +2,7 @@ import axios from 'axios';
 import AppError from '../../errors/AppError';
 
 const DeleteAsaasPaymentsService = async (id: string) => {
-  const url = `${process.env.ASAAS_URL}/api/v3/payments/${id}`;
+  const url = `${process.env.ASAAS_URL}/v3/payments/${id}`;
 
   const payments = await axios.delete(url, {
     headers: {

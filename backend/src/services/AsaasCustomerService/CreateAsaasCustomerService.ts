@@ -28,7 +28,7 @@ const CreateAsaasCustomerService = async (companyId: number) => {
     return customer;
   }
 
-  const url = `${process.env.ASAAS_URL}/api/v3/customers`;
+  const url = `${process.env.ASAAS_URL}/v3/customers`;
 
   const headers = {
     "Content-Type": "application/json",
