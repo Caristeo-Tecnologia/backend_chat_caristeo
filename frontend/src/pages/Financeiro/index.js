@@ -104,23 +104,21 @@ const Invoices = () => {
   const [selectedPlanId, setSelectedPlanId] = useState(user?.company?.planId);
 
   const [plans, setPlans] = useState([]);
-	const { list: listPlans } = usePlans();
+  const { list: listPlans } = usePlans();
 
-	useEffect(() => {
-		async function fetchData() {
-			const list = await listPlans();
-			setPlans(list);
-		}
-		fetchData();
-	}, []);
-
+  useEffect(() => {
+    async function fetchData() {
+      const list = await listPlans();
+      setPlans(list);
+    }
+    fetchData();
+  }, []);
 
   const handleOpenContactModal = (invoices) => {
     setStoragePlans(invoices);
     setSelectedContactId(null);
     setContactModalOpen(true);
   };
-
 
   const handleCloseContactModal = () => {
     setSelectedContactId(null);
@@ -147,12 +145,11 @@ const Invoices = () => {
 
   useEffect(() => {
     setLoading(true);
-    const delayDebounceFn = setTimeout(() => {    
+    const delayDebounceFn = setTimeout(() => {
       fetchInvoices();
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [searchParam, pageNumber]);
-
 
   const loadMore = () => {
     setPageNumber((prevState) => prevState + 1);
@@ -165,12 +162,16 @@ const Invoices = () => {
       loadMore();
     }
   };
+
   const rowStyle = (record) => {
     const hoje = moment(moment()).format("DD/MM/yyyy");
     const vencimento = moment(record.dueDate).format("DD/MM/yyyy");
-    var diff = moment(vencimento, "DD/MM/yyyy").diff(moment(hoje, "DD/MM/yyyy"));
-    var dias = moment.duration(diff).asDays();    
-    if (dias < 0 && record.status !== "paid") {
+    const diff = moment(vencimento, "DD/MM/yyyy").diff(
+      moment(hoje, "DD/MM/yyyy")
+    );
+    const dias = moment.duration(diff).asDays();
+
+    if (dias < 0 && record.status !== "paid" && record.status !== "deleted") {
       return { backgroundColor: "#ffbcbc9c" };
     }
   };
@@ -178,8 +179,10 @@ const Invoices = () => {
   const rowStatus = (record) => {
     const hoje = moment(moment()).format("DD/MM/yyyy");
     const vencimento = moment(record.dueDate).format("DD/MM/yyyy");
-    var diff = moment(vencimento, "DD/MM/yyyy").diff(moment(hoje, "DD/MM/yyyy"));
-    var dias = moment.duration(diff).asDays();    
+    const diff = moment(vencimento, "DD/MM/yyyy").diff(
+      moment(hoje, "DD/MM/yyyy")
+    );
+    const dias = moment.duration(diff).asDays();
     const status = record.status;
     if (status === "paid") {
       return "Pago";
@@ -192,23 +195,9 @@ const Invoices = () => {
     if (dias < 0) {
       return "Vencido";
     } else {
-      return "Em Aberto"
+      return "Em Aberto";
     }
-
-  }
-
-  const handleChangePlan = async (ev) => {
-    try {
-      const value = ev.target.value;
-      setSelectedPlanId(value);
-
-      await api.put(`/companies/${user.company.id}/plan`, {planId: value});
-      fetchInvoices();
-      toast.success('Sua assinatura foi atualizada com sucesso.');
-    } catch (error) {
-      toastError(error);
-    }
-  }
+  };
 
   return (
     <MainContainer>
@@ -218,31 +207,12 @@ const Invoices = () => {
         aria-labelledby="form-dialog-title"
         Invoice={storagePlans}
         contactId={selectedContactId}
-
       ></SubscriptionModal>
       <MainHeader>
-        <Grid container  justifyContent="space-between">
+        <Grid container justifyContent="space-between">
           <Grid item>
             <Title>Faturas</Title>
           </Grid>
-          <Grid item xs={4}>
-            <InputLabel htmlFor="plan-selection">Plano</InputLabel>
-            <Select
-              variant="outlined"
-              value={selectedPlanId}
-              fullWidth
-              id="plan-selection"
-              label="Plano"
-              onChange={handleChangePlan}
-              required
-            >
-              {plans.map((plan, key) => (
-                <MenuItem key={key} value={plan.id}>
-                  {plan.name} - Atendentes: {plan.users} - WhatsApp: {plan.connections} - Filas: {plan.queues} - R$ {plan.value}
-                </MenuItem>
-              ))}
-            </Select>
-        </Grid>
         </Grid>
       </MainHeader>
       <Paper
@@ -267,28 +237,28 @@ const Invoices = () => {
                 <TableRow style={rowStyle(invoices)} key={invoices.id}>
                   <TableCell align="center">{invoices.id}</TableCell>
                   <TableCell align="center">{invoices.detail}</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }} align="center">{invoices.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
-                  <TableCell align="center">{moment(invoices.dueDate).format("DD/MM/YYYY")}</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }} align="center">{rowStatus(invoices)}</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }} align="center"> {!["Pago", "Cancelado"].includes(rowStatus(invoices)) ? <a href={invoices.paymentUrl} target="_blank">pagar</a> : '-'}</TableCell>
-                  
-                    {
-                    /* rowStatus(invoices) !== "Pago" ?
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() => handleOpenContactModal(invoices)}
-                      >
-                        Selecionar plano
-                      </Button> :
-                      <Button
-                        size="small"
-                        variant="outlined"
-                      >
-                        PAGO 
-                      </Button> */
-                      }
+                  <TableCell style={{ fontWeight: "bold" }} align="center">
+                    {invoices.value.toLocaleString("pt-br", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </TableCell>
+                  <TableCell align="center">
+                    {moment(invoices.dueDate).format("DD/MM/YYYY")}
+                  </TableCell>
+                  <TableCell style={{ fontWeight: "bold" }} align="center">
+                    {rowStatus(invoices)}
+                  </TableCell>
+                  <TableCell style={{ fontWeight: "bold" }} align="center">
+                    {" "}
+                    {!["Pago", "Cancelado"].includes(rowStatus(invoices)) ? (
+                      <a href={invoices.paymentUrl} target="_blank">
+                        pagar
+                      </a>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
               {loading && <TableRowSkeleton columns={4} />}
