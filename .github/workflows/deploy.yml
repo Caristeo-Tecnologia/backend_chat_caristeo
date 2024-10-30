@@ -96,7 +96,8 @@ jobs:
             --query 'taskDefinition.revision' --output text)
 
           echo "New task revision: $NEW_TASK_REVISION"
-          echo "::set-output name=new_task_revision::$NEW_TASK_REVISION"
+          echo "NEW_TASK_REVISION=$NEW_TASK_REVISION" >> $GITHUB_ENV
+
 
       - name: Create or update ECS service
         env:
@@ -107,7 +108,8 @@ jobs:
           SERVICE_NAME="chat_caristeo_service01"
           CLUSTER_NAME="chat_caristeo_cluster"
 
-          NEW_TASK_REVISION="${{ steps.update_task.outputs.new_task_revision }}"
+          NEW_TASK_REVISION="${{ env.NEW_TASK_REVISION }}"
+
           echo "New task revision ao executar o serviço: $NEW_TASK_REVISION"
 
           # Check if the service exists
