@@ -8,13 +8,7 @@ get_mysql_root_password() {
   read -p "> " mysql_root_password
 }
 
-get_link_git() {
-  
-  print_banner
-  printf "${WHITE} 💻 Insira o link do GITHUB do Atendechat que deseja instalar:${GRAY_LIGHT}"
-  printf "\n\n"
-  read -p "> " link_git
-}
+
 
 get_instancia_add() {
   

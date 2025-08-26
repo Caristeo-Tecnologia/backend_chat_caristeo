@@ -29,7 +29,9 @@ printf "##  ##     ##     ######   ##  ##   #####    ######   ######   ##  ##   
 
 printf "\n"
 
-printf "2024 @ Todos os direitos reservados a https://atendechat.com\n"
+printf "Solicite suporte: https://atendechat.com/suporte\n"
+printf "Contrate nossos servidores: https://atendechat.com/servidores\n"
+printf "2025 @ Todos os direitos reservados a https://atendechat.com\n"
 
 
 

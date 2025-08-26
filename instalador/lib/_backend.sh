@@ -79,6 +79,8 @@ USER_LIMIT=${max_user}
 CONNECTIONS_LIMIT=${max_whats}
 CLOSED_SEND_BY_ME=true
 
+npm_package_version="6.0.1"
+
 [-]EOF
 EOF
 
