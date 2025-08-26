@@ -28,16 +28,13 @@ import useStyles from "./styles";
 import Invoices from "../../pages/Financeiro";
 
 
-export default function CheckoutPage(props) {
+export default function CheckoutPage({ Invoice, handleClose }) {
   const steps = ["Dados", "Personalizar", "Revisar"];
   const { formId, formField } = checkoutFormModel;
   
-  
-  
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(1);
-  const [datePayment, setDatePayment] = useState(null);
-  const [invoiceId, setinvoiceId] = useState(props.Invoice.id);
+  const [invoiceId, setinvoiceId] = useState(Invoice.id);
   const currentValidationSchema = validationSchema[activeStep];
   const isLastStep = activeStep === steps.length - 1;
   const { user } = useContext(AuthContext);
@@ -80,17 +77,23 @@ function _renderStepContent(step, setFieldValue, setActiveStep, values ) {
         cardNumber: values.cardNumber,
         cvv: values.cvv,
         plan: values.plan,
+        planId: plan.id,
         price: plan.price,
         users: plan.users,
         connections: plan.connections,
         invoiceId: invoiceId
       }
 
-      const { data } = await api.post("/subscription", newValues);
-      setDatePayment(data)
+      const { data } = await api.post("/asaas/payment-link", newValues);
+      if (data.url) {
+        window.open(data.url, '_blank');
+      }
       actions.setSubmitting(false);
       setActiveStep(activeStep + 1);
       toast.success("Assinatura realizada com sucesso!, aguardando a realização do pagamento");
+      if (handleClose) {
+        handleClose();
+      }
     } catch (err) {
       toastError(err);
     }
@@ -123,9 +126,9 @@ function _renderStepContent(step, setFieldValue, setActiveStep, values ) {
         ))}
       </Stepper>
       <React.Fragment>
-        {activeStep === steps.length ? (
+        {/* {activeStep === steps.length ? (
           <CheckoutSuccess pix={datePayment} />
-        ) : (
+        ) : ( */}
           <Formik
             initialValues={{
               ...user, 
@@ -167,7 +170,7 @@ function _renderStepContent(step, setFieldValue, setActiveStep, values ) {
               </Form>
             )}
           </Formik>
-        )}
+        {/* )} */}
       </React.Fragment>
     </React.Fragment>
   );

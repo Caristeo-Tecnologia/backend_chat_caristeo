@@ -44,6 +44,10 @@ type FindParams = {
   companyId: string;
 };
 
+type ShowQuery = {
+  withContacts: string;
+};
+
 export const index = async (req: Request, res: Response): Promise<Response> => {
   const { searchParam, pageNumber } = req.query as IndexQuery;
   const { companyId } = req.user;
@@ -155,8 +159,9 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
+  const { withContacts = 'true' } = req.query as ShowQuery;
 
-  const record = await ShowService(id);
+  const record = await ShowService(id, JSON.parse(withContacts));
 
   return res.status(200).json(record);
 };

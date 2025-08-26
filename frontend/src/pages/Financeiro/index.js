@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer, useContext } from "react";
 import { toast } from "react-toastify";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -30,6 +30,11 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
 
 import moment from "moment";
+import usePlans from "../../hooks/usePlans";
+import { Grid, InputLabel, MenuItem, Select } from "@material-ui/core";
+import { Field } from "formik";
+import useAuth from "../../hooks/useAuth.js";
+import { AuthContext } from "../../context/Auth/AuthContext";
 
 const reducer = (state, action) => {
   if (action.type === "LOAD_INVOICES") {
@@ -95,7 +100,19 @@ const Invoices = () => {
   const [storagePlans, setStoragePlans] = React.useState([]);
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
+  const { user } = useContext(AuthContext);
+  const [selectedPlanId, setSelectedPlanId] = useState(user?.company?.planId);
 
+  const [plans, setPlans] = useState([]);
+  const { list: listPlans } = usePlans();
+
+  useEffect(() => {
+    async function fetchData() {
+      const list = await listPlans();
+      setPlans(list);
+    }
+    fetchData();
+  }, []);
 
   const handleOpenContactModal = (invoices) => {
     setStoragePlans(invoices);
@@ -103,36 +120,36 @@ const Invoices = () => {
     setContactModalOpen(true);
   };
 
-
   const handleCloseContactModal = () => {
     setSelectedContactId(null);
     setContactModalOpen(false);
+    setPageNumber(1);
   };
   useEffect(() => {
     dispatch({ type: "RESET" });
     setPageNumber(1);
   }, [searchParam]);
 
+  const fetchInvoices = async () => {
+    try {
+      const { data } = await api.get("/invoices/all", {
+        params: { searchParam, pageNumber },
+      });
+      dispatch({ type: "LOAD_INVOICES", payload: data });
+      setHasMore(data.hasMore);
+      setLoading(false);
+    } catch (err) {
+      toastError(err);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
     const delayDebounceFn = setTimeout(() => {
-      const fetchInvoices = async () => {
-        try {
-          const { data } = await api.get("/invoices/all", {
-            params: { searchParam, pageNumber },
-          });
-          dispatch({ type: "LOAD_INVOICES", payload: data });
-          setHasMore(data.hasMore);
-          setLoading(false);
-        } catch (err) {
-          toastError(err);
-        }
-      };
       fetchInvoices();
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [searchParam, pageNumber]);
-
 
   const loadMore = () => {
     setPageNumber((prevState) => prevState + 1);
@@ -145,12 +162,16 @@ const Invoices = () => {
       loadMore();
     }
   };
+
   const rowStyle = (record) => {
     const hoje = moment(moment()).format("DD/MM/yyyy");
     const vencimento = moment(record.dueDate).format("DD/MM/yyyy");
-    var diff = moment(vencimento, "DD/MM/yyyy").diff(moment(hoje, "DD/MM/yyyy"));
-    var dias = moment.duration(diff).asDays();    
-    if (dias < 0 && record.status !== "paid") {
+    const diff = moment(vencimento, "DD/MM/yyyy").diff(
+      moment(hoje, "DD/MM/yyyy")
+    );
+    const dias = moment.duration(diff).asDays();
+
+    if (dias < 0 && record.status !== "paid" && record.status !== "deleted") {
       return { backgroundColor: "#ffbcbc9c" };
     }
   };
@@ -158,19 +179,25 @@ const Invoices = () => {
   const rowStatus = (record) => {
     const hoje = moment(moment()).format("DD/MM/yyyy");
     const vencimento = moment(record.dueDate).format("DD/MM/yyyy");
-    var diff = moment(vencimento, "DD/MM/yyyy").diff(moment(hoje, "DD/MM/yyyy"));
-    var dias = moment.duration(diff).asDays();    
+    const diff = moment(vencimento, "DD/MM/yyyy").diff(
+      moment(hoje, "DD/MM/yyyy")
+    );
+    const dias = moment.duration(diff).asDays();
     const status = record.status;
     if (status === "paid") {
       return "Pago";
     }
+
+    if (status === "deleted") {
+      return "Cancelado";
+    }
+
     if (dias < 0) {
       return "Vencido";
     } else {
-      return "Em Aberto"
+      return "Em Aberto";
     }
-
-  }
+  };
 
   return (
     <MainContainer>
@@ -180,10 +207,13 @@ const Invoices = () => {
         aria-labelledby="form-dialog-title"
         Invoice={storagePlans}
         contactId={selectedContactId}
-
       ></SubscriptionModal>
       <MainHeader>
-        <Title>Faturas</Title>
+        <Grid container justifyContent="space-between">
+          <Grid item>
+            <Title>Faturas</Title>
+          </Grid>
+        </Grid>
       </MainHeader>
       <Paper
         className={classes.mainPaper}
@@ -198,7 +228,7 @@ const Invoices = () => {
               <TableCell align="center">Valor</TableCell>
               <TableCell align="center">Data Venc.</TableCell>
               <TableCell align="center">Status</TableCell>
-              <TableCell align="center">Ação</TableCell>
+              <TableCell align="center">Link de pagamento</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -207,28 +237,27 @@ const Invoices = () => {
                 <TableRow style={rowStyle(invoices)} key={invoices.id}>
                   <TableCell align="center">{invoices.id}</TableCell>
                   <TableCell align="center">{invoices.detail}</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }} align="center">{invoices.value.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}</TableCell>
-                  <TableCell align="center">{moment(invoices.dueDate).format("DD/MM/YYYY")}</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }} align="center">{rowStatus(invoices)}</TableCell>
+                  <TableCell style={{ fontWeight: "bold" }} align="center">
+                    {invoices.value.toLocaleString("pt-br", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </TableCell>
                   <TableCell align="center">
-                    {rowStatus(invoices) !== "Pago" ?
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="secondary"
-                        onClick={() => handleOpenContactModal(invoices)}
-                      >
-                        PAGAR
-                      </Button> :
-                      <Button
-                        size="small"
-                        variant="outlined" 
-                        /* color="secondary"
-                        disabled */
-                      >
-                        PAGO 
-                      </Button>}
-
+                    {moment(invoices.dueDate).format("DD/MM/YYYY")}
+                  </TableCell>
+                  <TableCell style={{ fontWeight: "bold" }} align="center">
+                    {rowStatus(invoices)}
+                  </TableCell>
+                  <TableCell style={{ fontWeight: "bold" }} align="center">
+                    {" "}
+                    {!["Pago", "Cancelado"].includes(rowStatus(invoices)) ? (
+                      <a href={invoices.paymentUrl} target="_blank">
+                        pagar
+                      </a>
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

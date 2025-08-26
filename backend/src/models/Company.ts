@@ -40,6 +40,9 @@ class Company extends Model<Company> {
   email: string;
 
   @Column
+  cpfCnpj: string;
+
+  @Column
   status: boolean;
 
   @Column
@@ -47,6 +50,15 @@ class Company extends Model<Company> {
 
   @Column
   recurrence: string;
+  
+  @Column
+  asaasCustomerId: string;
+
+  @Column
+  asaasSubscriptionId: string;
+  
+  @Column
+  postalCode: string;
 
   @Column({
     type: DataType.JSONB

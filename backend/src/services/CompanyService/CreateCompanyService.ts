@@ -3,6 +3,7 @@ import AppError from "../../errors/AppError";
 import Company from "../../models/Company";
 import User from "../../models/User";
 import Setting from "../../models/Setting";
+import CreateAsaasSubscriptionService from "../AsaasSubscriptionService/CreateAsaasSubscriptionService";
 
 interface CompanyData {
   name: string;
@@ -14,6 +15,14 @@ interface CompanyData {
   campaignsEnabled?: boolean;
   dueDate?: string;
   recurrence?: string;
+  cpfCnpj?: string;
+  postalCode?: string;
+  creditCard?: {
+    name: string;
+    cardNumber: string;
+    expiryDate: string;
+    cvv: string;
+  };
 }
 
 const CreateCompanyService = async (
@@ -28,7 +37,10 @@ const CreateCompanyService = async (
     password,
     campaignsEnabled,
     dueDate,
-    recurrence
+    recurrence,
+    cpfCnpj,
+    postalCode,
+    creditCard
   } = companyData;
 
   const companySchema = Yup.object().shape({
@@ -51,8 +63,28 @@ const CreateCompanyService = async (
       )
   });
 
+  const userSchema = Yup.object().shape({
+    email: Yup.string()
+      .required()
+      .test(
+        "Check-unique-name",
+        "ERR_USER_EMAIL_ALREADY_EXISTS",
+        async value => {
+          if (value) {
+            const userWithSameName = await Company.findOne({
+              where: { email: value }
+            });
+
+            return !userWithSameName;
+          }
+          return false;
+        }
+      )
+  });
+
   try {
     await companySchema.validate({ name });
+    await userSchema.validate({ email });
   } catch (err: any) {
     throw new AppError(err.message);
   }
@@ -64,13 +96,15 @@ const CreateCompanyService = async (
     status,
     planId,
     dueDate,
-    recurrence
+    recurrence,
+    cpfCnpj,
+    postalCode
   });
 
-  const user = await User.create({
+  await User.create({
     name: company.name,
     email: company.email,
-    password: companyData.password,
+    password: password,
     profile: "admin",
     companyId: company.id
   });
@@ -84,7 +118,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "asaas",
       value: ""
-    },
+    }
   });
 
   //tokenixc
@@ -97,7 +131,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "tokenixc",
       value: ""
-    },
+    }
   });
 
   //ipixc
@@ -110,7 +144,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "ipixc",
       value: ""
-    },
+    }
   });
 
   //ipmkauth
@@ -123,7 +157,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "ipmkauth",
       value: ""
-    },
+    }
   });
 
   //clientsecretmkauth
@@ -136,7 +170,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "clientsecretmkauth",
       value: ""
-    },
+    }
   });
 
   //clientidmkauth
@@ -149,7 +183,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "clientidmkauth",
       value: ""
-    },
+    }
   });
 
   //CheckMsgIsGroup
@@ -162,7 +196,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "enabled",
       value: ""
-    },
+    }
   });
 
   //CheckMsgIsGroup
@@ -175,7 +209,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "call",
       value: "disabled"
-    },
+    }
   });
 
   //scheduleType
@@ -188,35 +222,34 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "scheduleType",
       value: "disabled"
-    },
+    }
   });
 
-
- // Enviar mensagem ao aceitar ticket
-    await Setting.findOrCreate({
-	where:{
+  // Enviar mensagem ao aceitar ticket
+  await Setting.findOrCreate({
+    where: {
       companyId: company.id,
-      key: "sendGreetingAccepted",
+      key: "sendGreetingAccepted"
     },
     defaults: {
       companyId: company.id,
       key: "sendGreetingAccepted",
       value: "disabled"
-    },
+    }
   });
-  
- // Enviar mensagem de transferencia
-    await Setting.findOrCreate({
-	where:{
+
+  // Enviar mensagem de transferencia
+  await Setting.findOrCreate({
+    where: {
       companyId: company.id,
-      key: "sendMsgTransfTicket",
+      key: "sendMsgTransfTicket"
     },
     defaults: {
       companyId: company.id,
       key: "sendMsgTransfTicket",
       value: "disabled"
-    },
- });
+    }
+  });
 
   //userRating
   await Setting.findOrCreate({
@@ -228,7 +261,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "userRating",
       value: "disabled"
-    },
+    }
   });
 
   //userRating
@@ -241,8 +274,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "chatBotType",
       value: "text"
-    },
-
+    }
   });
 
   await Setting.findOrCreate({
@@ -254,7 +286,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "tokensgp",
       value: ""
-    },
+    }
   });
 
   await Setting.findOrCreate({
@@ -266,7 +298,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "ipsgp",
       value: ""
-    },
+    }
   });
 
   await Setting.findOrCreate({
@@ -278,7 +310,7 @@ const CreateCompanyService = async (
       companyId: company.id,
       key: "appsgp",
       value: ""
-    },
+    }
   });
 
   if (companyData.campaignsEnabled !== undefined) {
@@ -291,13 +323,34 @@ const CreateCompanyService = async (
         companyId: company.id,
         key: "campaignsEnabled",
         value: `${campaignsEnabled}`
-      },
-
+      }
     });
     if (!created) {
       await setting.update({ value: `${campaignsEnabled}` });
     }
   }
+
+  const _creditCard = {
+    creditCard: {
+      holderName: creditCard.name,
+      number: creditCard.cardNumber,
+      expiryMonth: creditCard.expiryDate.split(" / ")[0],
+      expiryYear: creditCard.expiryDate.split(" / ")[1],
+      ccv: creditCard.cvv
+    },
+    creditCardHolderInfo: {
+      name: creditCard.name,
+      email: email,
+      cpfCnpj: cpfCnpj?.replace(/\D/g, ""),
+      postalCode: postalCode?.replace(/\D/g, ""),
+      addressNumber: "0",
+      addressComplement: null,
+      phone: phone?.replace(/\D/g, ""),
+      mobilePhone: phone?.replace(/\D/g, "")
+    }
+  };
+
+  await CreateAsaasSubscriptionService(company.id, _creditCard);
 
   return company;
 };

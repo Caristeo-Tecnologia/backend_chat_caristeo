@@ -22,6 +22,9 @@ class Invoices extends Model<Invoices> {
   detail: string;
 
   @Column
+  paymentUrl: string;
+
+  @Column
   status: string;
 
   @Column
@@ -38,6 +41,9 @@ class Invoices extends Model<Invoices> {
 
   @Column
   companyId: number;
+  
+  @Column
+  asaasPaymentId: string;
 
 }
 
