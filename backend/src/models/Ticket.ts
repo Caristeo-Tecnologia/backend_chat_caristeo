@@ -12,7 +12,8 @@ import {
   Default,
   BeforeCreate,
   BelongsToMany,
-  AllowNull
+  AllowNull,
+  BeforeUpdate
 } from "sequelize-typescript";
 import { v4 as uuidv4 } from "uuid";
 
@@ -116,6 +117,18 @@ class Ticket extends Model<Ticket> {
   static setUUID(ticket: Ticket) {
     ticket.uuid = uuidv4();
   }
+
+  @BeforeUpdate
+  @BeforeCreate
+  static updatePendingAt(ticket: Ticket) {
+    if (ticket.status === "pending" && !ticket.pendingAt) {
+      ticket.pendingAt = new Date();
+    }
+
+    if (ticket.status === "closed") {
+      ticket.pendingAt = null;
+    }
+  };
   
   @Default(false)
   @Column
@@ -149,6 +162,9 @@ class Ticket extends Model<Ticket> {
   @Default(0)
   @Column
   amountUsedBotQueues: number;
+
+  @Column
+  pendingAt: Date;
 }
 
 export default Ticket;

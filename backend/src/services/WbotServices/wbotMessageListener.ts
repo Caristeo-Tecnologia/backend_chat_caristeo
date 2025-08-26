@@ -41,7 +41,7 @@ import VerifyCurrentSchedule from "../CompanyService/VerifyCurrentSchedule";
 import Campaign from "../../models/Campaign";
 import CampaignShipping from "../../models/CampaignShipping";
 import { Op } from "sequelize";
-import { campaignQueue, parseToMilliseconds, randomValue } from "../../queues";
+import { campaignQueue, messageQueue, parseToMilliseconds, randomValue } from "../../queues";
 import User from "../../models/User";
 import Setting from "../../models/Setting";
 import { cacheLayer } from "../../libs/cache";
@@ -909,7 +909,9 @@ const verifyMediaMessage = async (
 export const verifyMessage = async (
   msg: proto.IWebMessageInfo,
   ticket: Ticket,
-  contact: Contact
+  contact: Contact,
+  fromQueue?: boolean,
+  hasOption?: boolean
 ) => {
   const io = getIO();
   const quotedMsg = await verifyQuotedMessage(msg);
@@ -931,7 +933,9 @@ export const verifyMessage = async (
     remoteJid: msg.key.remoteJid,
     participant: msg.key.participant,
     dataJson: JSON.stringify(msg),
-    isEdited: isEdited
+    isEdited: isEdited,
+    fromQueue,
+    hasOption
   };
 
   await ticket.update({
@@ -1125,7 +1129,10 @@ const verifyQueue = async (
       textMessage
     );
 
-    await verifyMessage(sendMsg, ticket, ticket.contact);
+    const fromQueue = true;
+    const hastOption = !!options;
+
+    await verifyMessage(sendMsg, ticket, ticket.contact, fromQueue, hastOption);
   };
 
   if (choosenQueue) {
@@ -1379,7 +1386,13 @@ const handleChartbot = async (
   if (messageBody == "#") {
     // voltar para o menu inicial
     await ticket.update({ queueOptionId: null, chatbot: false, queueId: null });
+    await verifyMessage(msg, ticket, ticket.contact, true, true);
     await verifyQueue(wbot, msg, ticket, ticket.contact);
+    return;
+  }
+
+  if (messageBody == "x" || messageBody == "X") {
+    UpdateTicketService({ticketData: {status: "closed"}, ticketId: ticket.id, companyId: ticket.companyId});
     return;
   }
 
@@ -1509,8 +1522,12 @@ const handleChartbot = async (
       queueOptions.forEach((option, i) => {
         options += `*[ ${option.option} ]* - ${option.title}\n`;
       });
+
+      const hasOption = !!options;
+
       //options += `\n*[ 0 ]* - Menu anterior`;
       options += `\n*[ # ]* - Menu inicial`;
+      options += `\n*[ x ]* - Finalizar atendimento`;;
 
       const textMessage = {
         text: formatBody(
@@ -1526,7 +1543,8 @@ const handleChartbot = async (
         textMessage
       );
 
-      await verifyMessage(sendMsg, ticket, ticket.contact);
+      const fromQueue = true;
+      await verifyMessage(sendMsg, ticket, ticket.contact, fromQueue, hasOption);
     };
 
     // if (buttonActive.value === "list") {
@@ -1635,8 +1653,12 @@ const handleChartbot = async (
         queueOptions.forEach((option, i) => {
           options += `*[ ${option.option} ]* - ${option.title}\n`;
         });
+
+        const hasOption = !!options;
+
         options += `\n*[ 0 ]* - Menu anterior`;
         options += `\n*[ # ]* - Menu inicial`;
+        options += `\n*[ x ]* - Finalizar atendimento`;
         const textMessage = {
           text: formatBody(
             `\u200e${currentOption.message}\n\n${options}`,
@@ -1651,7 +1673,8 @@ const handleChartbot = async (
           textMessage
         );
 
-        await verifyMessage(sendMsg, ticket, ticket.contact);
+        const fromQueue = true;
+        await verifyMessage(sendMsg, ticket, ticket.contact, fromQueue, hasOption);
       };
 
       if (buttonActive.value === "list") {
@@ -1813,12 +1836,19 @@ const handleMessage = async (
     // voltar para o menu inicial
 
     if (bodyMessage == "#") {
+      logger.info(`[bodyMessage]`);
       await ticket.update({
         queueOptionId: null,
         chatbot: false,
         queueId: null
       });
+      await verifyMessage(msg, ticket, contact, true, true);
       await verifyQueue(wbot, msg, ticket, ticket.contact);
+      return;
+    }
+
+    if (bodyMessage == "x" || bodyMessage == "X") {
+      UpdateTicketService({ticketData: {status: "closed"}, ticketId: ticket.id, companyId: ticket.companyId});
       return;
     }
 
